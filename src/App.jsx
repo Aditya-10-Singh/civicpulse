@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import StatCards from './components/StatCards';
 import IssueCard from './components/IssueCard';
+import IssueTable from './components/IssueTable';
 import IssueModal from './components/IssueModal';
 import AuthModal from './components/AuthModal';
 import SheetsDrawer from './components/SheetsDrawer';
@@ -27,15 +28,18 @@ import {
 
 import { 
   Search, 
-  Filter, 
-  SlidersHorizontal, 
+  LayoutGrid, 
+  List, 
   CheckCircle2, 
   AlertCircle, 
   Sparkles, 
-  ArrowUpDown,
-  Building,
-  GraduationCap,
-  ExternalLink
+  Filter,
+  Plus,
+  RefreshCw,
+  FileSpreadsheet,
+  MapPin,
+  Building2,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function App() {
@@ -43,6 +47,9 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   
+  // View mode: 'grid' or 'table'
+  const [viewMode, setViewMode] = useState('grid');
+
   // Modals
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -53,8 +60,8 @@ export default function App() {
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [selectedStatus, setSelectedStatus] = useState('All Statuses');
-  const [sortBy, setSortBy] = useState('Newest'); // 'Newest', 'Upvoted', 'Critical'
+  const [selectedStatusTab, setSelectedStatusTab] = useState('ALL'); // 'ALL', 'PENDING', 'PROGRESS', 'RESOLVED', 'CRITICAL'
+  const [sortBy, setSortBy] = useState('Newest');
 
   // Toast alert
   const [toast, setToast] = useState(null);
@@ -101,7 +108,7 @@ export default function App() {
   const handleCreateGrievance = async (formData) => {
     let newItem = {
       ...formData,
-      id: 'g-' + Date.now(),
+      id: 'g-' + Date.now().toString().slice(-4),
       created_at: new Date().toISOString(),
       synced_to_sheets: false
     };
@@ -128,9 +135,8 @@ export default function App() {
       }
     }
 
-    // Prepend to list
     setIssues(prev => [newItem, ...prev]);
-    showToast("Civic grievance successfully registered!");
+    showToast("Civic grievance ticket registered successfully!");
 
     // Background sync to Google Sheets
     try {
@@ -172,12 +178,12 @@ export default function App() {
       item.id === id ? { ...item, upvotes: newCount } : item
     ));
 
-    showToast("Upvote recorded! Priority increased.");
+    showToast("Upvote recorded!");
   };
 
   // CRUD: Delete
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to withdraw/delete this grievance?")) {
+    if (!window.confirm("Are you sure you want to withdraw/delete this grievance ticket?")) {
       return;
     }
 
@@ -190,7 +196,7 @@ export default function App() {
     }
 
     setIssues(prev => prev.filter(item => item.id !== id));
-    showToast("Grievance withdrawn and removed.", "info");
+    showToast("Ticket withdrawn and archived.", "info");
   };
 
   // Auth Logout
@@ -199,6 +205,13 @@ export default function App() {
     setCurrentUser(null);
     showToast("Signed out successfully", "info");
   };
+
+  // Tab counts
+  const countAll = issues.length;
+  const countPending = issues.filter(i => i.status === 'Pending Review').length;
+  const countProgress = issues.filter(i => i.status === 'In Progress').length;
+  const countResolved = issues.filter(i => i.status === 'Resolved').length;
+  const countCritical = issues.filter(i => i.priority === 'Critical').length;
 
   // Filtered & Sorted issues
   const filteredIssues = useMemo(() => {
@@ -211,10 +224,13 @@ export default function App() {
       const matchesCategory = 
         selectedCategory === 'All Categories' || item.category === selectedCategory;
 
-      const matchesStatus = 
-        selectedStatus === 'All Statuses' || item.status === selectedStatus;
+      let matchesTab = true;
+      if (selectedStatusTab === 'PENDING') matchesTab = item.status === 'Pending Review';
+      else if (selectedStatusTab === 'PROGRESS') matchesTab = item.status === 'In Progress';
+      else if (selectedStatusTab === 'RESOLVED') matchesTab = item.status === 'Resolved';
+      else if (selectedStatusTab === 'CRITICAL') matchesTab = item.priority === 'Critical';
 
-      return matchesSearch && matchesCategory && matchesStatus;
+      return matchesSearch && matchesCategory && matchesTab;
     }).sort((a, b) => {
       if (sortBy === 'Upvoted') {
         return (b.upvotes || 0) - (a.upvotes || 0);
@@ -225,18 +241,18 @@ export default function App() {
       }
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
-  }, [issues, searchQuery, selectedCategory, selectedStatus, sortBy]);
+  }, [issues, searchQuery, selectedCategory, selectedStatusTab, sortBy]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen bg-[#0B0F17] text-slate-200 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       
       {/* Toast Alert */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 animate-bounce">
-          <div className={`px-4 py-3 rounded-2xl shadow-2xl border text-sm font-semibold flex items-center space-x-2 ${
+          <div className={`px-4 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-semibold flex items-center space-x-2 ${
             toast.type === 'info' 
-              ? 'bg-slate-800 text-sky-300 border-sky-500/30' 
-              : 'bg-emerald-950 text-emerald-200 border-emerald-500/40 shadow-emerald-500/10'
+              ? 'bg-[#111724] text-sky-300 border-sky-500/30' 
+              : 'bg-[#111724] text-emerald-300 border-emerald-500/40'
           }`}>
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{toast.message}</span>
@@ -249,6 +265,7 @@ export default function App() {
         isSupabaseLive={isSupabaseLive}
         isSheetsLive={isSheetsLive}
         user={currentUser}
+        issuesCount={issues.length}
         onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenSheetsDrawer={() => setIsSheetsDrawerOpen(true)}
@@ -257,147 +274,190 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {/* Hero Header */}
-      <section className="relative overflow-hidden pt-8 pb-10 border-b border-slate-800/80 bg-gradient-to-b from-slate-900/60 to-transparent">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Dashboard Sub-Header / Control Strip */}
+      <div className="border-b border-white/[0.06] bg-[#0E131F]/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 text-sky-300 text-xs font-semibold border border-sky-500/20 mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-                <span>Municipal Redressal & Live Spreadsheets Gateway</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                Empowering Citizens.<br />
-                <span className="bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">
-                  Automating Municipal Response.
+            {/* Title & Metadata Badges */}
+            <div>
+              <div className="flex items-center space-x-2 mb-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                  Civic Infrastructure & Redressal Desk
+                </h1>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                  LIVE PIPELINE
                 </span>
-              </h1>
-              <p className="mt-3 text-sm sm:text-base text-slate-300 leading-relaxed">
-                Report local civic hazards in real-time. Every complaint is securely written to <strong>Supabase PostgreSQL</strong> and synchronized instantaneously to the department's <strong>Google Sheet</strong> for rapid field dispatch.
+              </div>
+              <p className="text-xs text-slate-400 flex items-center space-x-3">
+                <span>Relational PostgreSQL + Real-Time Google Sheets Webhooks</span>
+                <span className="text-slate-600 hidden sm:inline">•</span>
+                <span className="hidden sm:inline text-sky-400/90 font-medium">Developed by Aditya Singh</span>
               </p>
             </div>
 
-            {/* Quick Actions Card */}
-            <div className="bg-slate-900/80 border border-slate-700/60 rounded-2xl p-5 shadow-xl shrink-0 flex flex-col gap-3 min-w-[280px]">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Assessment Controls
-                </span>
-                <span className="text-[11px] text-emerald-400 font-semibold">Ready for Viva</span>
-              </div>
-              
-              <button
-                onClick={() => setIsVivaModalOpen(true)}
-                className="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/25 transition-all flex items-center justify-center space-x-2"
-              >
-                <GraduationCap className="w-4 h-4" />
-                <span>Open 8-Point Rubric Guide</span>
-              </button>
-
+            {/* Quick Action Tools */}
+            <div className="flex items-center space-x-2 shrink-0">
+              {/* Sheets Hub Button */}
               <button
                 onClick={() => setIsSheetsDrawerOpen(true)}
-                className="w-full py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors flex items-center justify-center space-x-2"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] hover:text-white transition-colors"
               >
-                <span>Demonstrate Google Sheets Sync</span>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Sheets Sync Hub</span>
+              </button>
+
+              {/* Log Ticket Button */}
+              <button
+                onClick={() => setIsReportModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white shadow-sm shadow-sky-500/20 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>New Grievance Ticket</span>
               </button>
             </div>
 
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      {/* Main Body */}
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         
-        {/* KPI Stats Overview */}
+        {/* KPI Statistics Box */}
         <StatCards issues={issues} />
 
-        {/* Filter and Search Bar */}
-        <div className="glass-card rounded-2xl p-4 mb-6 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Toolbar: Status Tabs + Search + View Mode Switcher */}
+        <div className="space-y-3 mb-6">
           
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Search grievances by title, description, or landmark..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-            />
+          {/* Top Row: Segmented Status Tabs */}
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 overflow-x-auto">
+            <div className="flex items-center space-x-1">
+              {[
+                { id: 'ALL', label: 'All Tickets', count: countAll },
+                { id: 'CRITICAL', label: 'Critical Hazards', count: countCritical, color: 'text-rose-400' },
+                { id: 'PROGRESS', label: 'In Progress', count: countProgress, color: 'text-amber-400' },
+                { id: 'RESOLVED', label: 'Resolved Archive', count: countResolved, color: 'text-emerald-400' },
+                { id: 'PENDING', label: 'Pending Review', count: countPending }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedStatusTab(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 whitespace-nowrap ${
+                    selectedStatusTab === tab.id
+                      ? 'bg-white/[0.08] text-white font-semibold border border-white/[0.12]'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.02]'
+                  }`}
+                >
+                  <span className={tab.color || ''}>{tab.label}</span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                    selectedStatusTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+                  }`}>
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* View Mode Switcher (Grid vs Table) */}
+            <div className="flex items-center space-x-1 bg-[#111724] p-1 rounded-lg border border-white/[0.08] shrink-0 ml-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === 'grid' 
+                    ? 'bg-sky-500 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Card Grid View"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === 'table' 
+                    ? 'bg-sky-500 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Data Table View"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
-          {/* Filter Dropdowns */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Bottom Row: Search & Filters */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             
-            {/* Category Dropdown */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
-            >
-              {CATEGORIES.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search ticket title, ward landmark, or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#111724] border border-white/[0.08] rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+              />
+            </div>
 
-            {/* Status Dropdown */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
-            >
-              {STATUSES.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+            {/* Filter Dropdowns */}
+            <div className="flex items-center space-x-2">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-[#111724] border border-white/[0.08] text-slate-300 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
+              >
+                {CATEGORIES.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
 
-            {/* Sort Dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
-            >
-              <option value="Newest">Newest First</option>
-              <option value="Upvoted">Most Upvoted</option>
-              <option value="Critical">Critical Severity</option>
-            </select>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-[#111724] border border-white/[0.08] text-slate-300 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
+              >
+                <option value="Newest">Newest First</option>
+                <option value="Upvoted">Most Upvoted</option>
+                <option value="Critical">Critical Priority</option>
+              </select>
+            </div>
 
           </div>
 
         </div>
 
-        {/* Results Counter & Active Filter summary */}
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-4 px-1">
-          <span>Showing {filteredIssues.length} of {issues.length} community grievances</span>
-          {(searchQuery || selectedCategory !== 'All Categories' || selectedStatus !== 'All Statuses') && (
+        {/* Display Counter */}
+        <div className="flex items-center justify-between text-xs text-slate-500 mb-3 px-1">
+          <span>Showing {filteredIssues.length} tickets</span>
+          {(searchQuery || selectedCategory !== 'All Categories' || selectedStatusTab !== 'ALL') && (
             <button
-              onClick={() => { setSearchQuery(''); setSelectedCategory('All Categories'); setSelectedStatus('All Statuses'); }}
+              onClick={() => { setSearchQuery(''); setSelectedCategory('All Categories'); setSelectedStatusTab('ALL'); }}
               className="text-sky-400 hover:underline"
             >
-              Reset all filters
+              Reset active filters
             </button>
           )}
         </div>
 
-        {/* Grievance Grid */}
+        {/* Content Display: Card Grid or Data Table */}
         {filteredIssues.length === 0 ? (
-          <div className="glass-card rounded-3xl p-12 text-center border border-slate-800 my-8">
-            <Building className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-white mb-1">No grievances found matching criteria</h3>
+          <div className="dashboard-card rounded-xl p-12 text-center border border-white/[0.08] my-6">
+            <Building2 className="w-10 h-10 text-slate-600 mx-auto mb-2.5" />
+            <h3 className="text-base font-bold text-white mb-1">No matching tickets found</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
-              Try adjusting your search query, selecting "All Categories", or report a new issue.
+              Try adjusting your search query, or select another category or status tab.
             </p>
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white shadow-lg transition-colors"
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-colors"
             >
-              + Report First Issue Here
+              + Log New Grievance
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredIssues.map((issue) => (
               <IssueCard
                 key={issue.id}
@@ -409,27 +469,34 @@ export default function App() {
               />
             ))}
           </div>
+        ) : (
+          <IssueTable
+            issues={filteredIssues}
+            onUpvote={handleUpvote}
+            onStatusChange={handleStatusChange}
+            onDelete={handleDelete}
+          />
         )}
 
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-slate-800/80 bg-slate-950 py-8 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="mt-auto border-t border-white/[0.06] bg-[#0E131F] py-6 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-slate-300">CivicPulse</span>
+            <span className="font-semibold text-slate-300">CivicPulse</span>
             <span>• Developed by Aditya Singh</span>
-            <span>• Full-Stack Assessment Project</span>
+            <span>• Assessment Ready</span>
           </div>
           <div className="flex items-center space-x-4 text-slate-400">
             <button onClick={() => setIsVivaModalOpen(true)} className="hover:text-purple-400 transition-colors">
-              Assessment Rubric
+              Assessment Guide (8/8)
             </button>
             <button onClick={() => setIsSheetsDrawerOpen(true)} className="hover:text-emerald-400 transition-colors">
               Google Sheets Sync
             </button>
             <button onClick={() => setIsConfigModalOpen(true)} className="hover:text-sky-400 transition-colors">
-              Supabase Config
+              Supabase Configuration
             </button>
           </div>
         </div>

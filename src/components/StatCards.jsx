@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Clock, Activity } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Inbox, TrendingUp } from 'lucide-react';
 
 export default function StatCards({ issues }) {
   const total = issues.length;
@@ -10,68 +10,83 @@ export default function StatCards({ issues }) {
 
   const stats = [
     {
+      id: "total",
       label: "Total Registered",
       value: total,
-      sub: "Across all municipal zones",
-      icon: Activity,
-      color: "text-sky-400",
-      bg: "bg-sky-500/10",
-      border: "border-sky-500/20"
+      meta: "Across 5 Categories",
+      icon: Inbox,
+      iconColor: "text-slate-300",
+      iconBg: "bg-slate-800/80 border-slate-700/60",
+      accent: "border-l-sky-500"
     },
     {
-      label: "Under Active Action",
+      id: "progress",
+      label: "Field Inspection Active",
       value: inProgress,
-      sub: "Field squads dispatched",
+      meta: "Squads dispatched",
       icon: Clock,
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/20"
+      iconColor: "text-amber-400",
+      iconBg: "bg-amber-500/10 border-amber-500/20",
+      accent: "border-l-amber-500"
     },
     {
-      label: "Redressed & Resolved",
+      id: "resolved",
+      label: "Resolved & Closed",
       value: resolved,
-      sub: `${resolutionRate}% overall resolution rate`,
+      meta: `${resolutionRate}% completion rate`,
       icon: CheckCircle2,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
-      border: "border-emerald-500/20"
+      iconColor: "text-emerald-400",
+      iconBg: "bg-emerald-500/10 border-emerald-500/20",
+      accent: "border-l-emerald-500"
     },
     {
-      label: "Critical Emergencies",
+      id: "critical",
+      label: "Critical Hazards",
       value: critical,
-      sub: "Requiring urgent intervention",
+      meta: "Escalated for priority",
       icon: AlertTriangle,
-      color: "text-rose-400",
-      bg: "bg-rose-500/10",
-      border: "border-rose-500/20"
+      iconColor: "text-rose-400",
+      iconBg: "bg-rose-500/10 border-rose-500/20",
+      accent: "border-l-rose-500"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {stats.map((s, idx) => {
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+      {stats.map((s) => {
         const Icon = s.icon;
         return (
           <div 
-            key={idx}
-            className={`p-5 rounded-2xl glass-card border ${s.border} hover:border-slate-600 transition-all duration-300 relative overflow-hidden`}
+            key={s.id}
+            className={`dashboard-card rounded-xl p-4 border border-white/[0.08] border-l-4 ${s.accent} relative overflow-hidden`}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 {s.label}
               </span>
-              <div className={`p-2 rounded-xl ${s.bg}`}>
-                <Icon className={`w-5 h-5 ${s.color}`} />
+              <div className={`w-7 h-7 rounded-lg border flex items-center justify-center ${s.iconBg}`}>
+                <Icon className={`w-3.5 h-3.5 ${s.iconColor}`} />
               </div>
             </div>
+
             <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-extrabold text-white">
+              <span className="text-2xl font-bold tracking-tight text-white font-mono">
                 {s.value}
               </span>
+              <span className="text-xs text-slate-400">
+                tickets
+              </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 truncate">
-              {s.sub}
-            </p>
+
+            <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-slate-400">
+              <span>{s.meta}</span>
+              {s.id === 'resolved' && (
+                <span className="text-emerald-400 font-semibold flex items-center space-x-0.5">
+                  <TrendingUp className="w-3 h-3" />
+                  <span>{resolutionRate}%</span>
+                </span>
+              )}
+            </div>
           </div>
         );
       })}

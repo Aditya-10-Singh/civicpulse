@@ -2,34 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-[#0B0F17] text-slate-200 antialiased selection:bg-sky-500/30 selection:text-sky-200;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
 @layer utilities {
-  .glass-card {
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(12px);
+  /* Crisp, human-crafted card styling */
+  .dashboard-card {
+    background-color: #111724;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
   }
-  .glass-header {
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .dashboard-card-hover {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .glow-blue {
-    box-shadow: 0 0 25px -5px rgba(2, 132, 199, 0.3);
+  .dashboard-card-hover:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(56, 189, 248, 0.15);
+  }
+
+  /* Crisp table rows */
+  .table-row-hover:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  /* Subtle dot grid background for authentic software feel */
+  .bg-grid-pattern {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #0B0F17;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: #1E293B;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #334155;
 }

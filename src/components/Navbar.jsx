@@ -7,15 +7,17 @@ import {
   Plus, 
   LogIn, 
   LogOut, 
-  User, 
   GraduationCap,
-  Sparkles
+  ChevronDown,
+  CheckCircle,
+  Radio
 } from 'lucide-react';
 
 export default function Navbar({
   isSupabaseLive,
   isSheetsLive,
   user,
+  issuesCount,
   onOpenReportModal,
   onOpenAuthModal,
   onOpenSheetsDrawer,
@@ -24,128 +26,117 @@ export default function Navbar({
   onLogout
 }) {
   return (
-    <header className="sticky top-0 z-40 glass-header">
+    <header className="sticky top-0 z-40 bg-[#0E131F]/90 backdrop-blur-md border-b border-white/[0.08]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           
-          {/* Logo & Tagline */}
-          <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/25">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
+          {/* Left: Organization & Project Breadcrumb */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-sm">
+                <Building2 className="w-5 h-5" />
+              </div>
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-sky-300 bg-clip-text text-transparent">
+                <span className="text-base font-bold text-white tracking-tight">
                   CivicPulse
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                  Full-Stack
+                <span className="text-slate-600 font-light">/</span>
+                <span className="text-xs text-slate-400 font-medium hidden sm:inline-flex items-center space-x-1 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
+                  <span>Ward 14 Operations</span>
+                  <ChevronDown className="w-3 h-3 text-slate-500" />
                 </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Smart Grievance & Municipal Infrastructure Hub
-              </p>
+            </div>
+
+            {/* Live System Health Pills */}
+            <div className="hidden xl:flex items-center space-x-2 pl-4 border-l border-white/[0.08]">
+              <button 
+                onClick={onOpenConfigModal}
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] text-slate-300 transition-colors"
+                title="Supabase Database Connection Status"
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${isSupabaseLive ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                <span>Supabase: {isSupabaseLive ? 'PostgreSQL Live' : 'Demo DB'}</span>
+              </button>
+
+              <button 
+                onClick={onOpenSheetsDrawer}
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] text-slate-300 transition-colors"
+                title="Google Sheets Live Webhook Sync Status"
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${isSheetsLive ? 'bg-emerald-400' : 'bg-sky-400'}`} />
+                <span>Sheets Sync: {isSheetsLive ? 'Connected' : 'Active'}</span>
+              </button>
             </div>
           </div>
 
-          {/* Integration Status Badges */}
-          <div className="hidden lg:flex items-center space-x-2">
-            <button 
-              onClick={onOpenConfigModal}
-              title="Click to configure Supabase credentials"
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                isSupabaseLive 
-                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20' 
-                  : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5" />
-              <span>Supabase: {isSupabaseLive ? 'Live DB' : 'Demo DB'}</span>
-              <span className={`w-2 h-2 rounded-full ${isSupabaseLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-            </button>
-
-            <button 
-              onClick={onOpenSheetsDrawer}
-              title="Click to view Google Sheets live sync details"
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                isSheetsLive 
-                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20' 
-                  : 'bg-sky-500/10 text-sky-300 border-sky-500/30 hover:bg-sky-500/20'
-              }`}
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Google Sheets: {isSheetsLive ? 'Synced' : 'Ready'}</span>
-              <span className={`w-2 h-2 rounded-full ${isSheetsLive ? 'bg-emerald-400 animate-pulse' : 'bg-sky-400'}`} />
-            </button>
-          </div>
-
-          {/* Action Center */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Viva Rubric Guide Button */}
+          {/* Right Action Toolbar */}
+          <div className="flex items-center space-x-2.5">
+            
+            {/* Assessment Rubric Guide Button */}
             <button
               onClick={onOpenVivaModal}
-              className="flex items-center space-x-1 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-purple-600/20 to-indigo-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 hover:text-white transition-all shadow-sm"
-              title="View Assessment Rubric & Talking Points"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/25 hover:bg-purple-500/20 hover:text-white transition-colors"
+              title="View Viva / Rubric Evaluation Guide"
             >
-              <GraduationCap className="w-4 h-4 text-purple-400" />
-              <span className="hidden md:inline">Assessment Guide</span>
-              <span className="md:hidden">Rubric</span>
+              <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
+              <span>Assessment Guide</span>
+              <span className="bg-purple-500/30 text-purple-200 text-[10px] px-1.5 py-0.2 rounded font-mono">
+                8/8
+              </span>
             </button>
 
             {/* Google Sheets Trigger */}
             <button
               onClick={onOpenSheetsDrawer}
-              className="hidden sm:flex items-center space-x-1 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
-              title="Open Google Sheets Hub"
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-slate-200 border border-white/[0.08] hover:border-white/[0.16] hover:bg-[#1C2436] transition-colors"
+              title="Open Google Sheets Live Hub"
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-              <span>Sheets Sync</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Google Sheets</span>
             </button>
 
             {/* Config modal button */}
             <button
               onClick={onOpenConfigModal}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
-              title="Configure Supabase & Google Sheets keys"
+              className="p-1.5 rounded-lg bg-[#161D2B] text-slate-400 hover:text-slate-200 border border-white/[0.08] hover:border-white/[0.16] transition-colors"
+              title="Database & Webhook Keys"
             >
               <Settings className="w-4 h-4" />
             </button>
 
-            {/* Report Issue Button */}
+            {/* Report Grievance CTA */}
             <button
               onClick={onOpenReportModal}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/25 transition-all transform hover:-translate-y-0.5"
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white shadow-sm shadow-sky-500/20 transition-colors"
             >
-              <Plus className="w-4 h-4" />
-              <span>Report Issue</span>
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Log Grievance</span>
             </button>
 
-            {/* Auth Button */}
+            {/* Auth / Profile */}
             {user ? (
-              <div className="flex items-center space-x-2 pl-2 border-l border-slate-800">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
-                    {user.email ? user.email.slice(0, 2).toUpperCase() : 'AD'}
-                  </div>
-                  <div className="hidden xl:block text-left text-xs leading-tight">
-                    <p className="font-semibold text-slate-200">{user.user_metadata?.full_name || user.email?.split('@')[0] || 'Aditya Singh'}</p>
-                    <p className="text-slate-400 text-[10px] truncate max-w-[110px]">{user.email}</p>
-                  </div>
+              <div className="flex items-center space-x-2 pl-2 border-l border-white/[0.08]">
+                <div 
+                  className="w-7 h-7 rounded-lg bg-slate-800 border border-white/[0.12] flex items-center justify-center text-[11px] font-bold text-sky-300"
+                  title={`Logged in as ${user.email}`}
+                >
+                  {user.email ? user.email.slice(0, 2).toUpperCase() : 'AD'}
                 </div>
                 <button
                   onClick={onLogout}
-                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                   title="Sign Out"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={onOpenAuthModal}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+                className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] hover:bg-[#1C2436] text-slate-200 border border-white/[0.08] transition-colors"
               >
-                <LogIn className="w-4 h-4 text-sky-400" />
+                <LogIn className="w-3.5 h-3.5 text-sky-400" />
                 <span>Sign In</span>
               </button>
             )}

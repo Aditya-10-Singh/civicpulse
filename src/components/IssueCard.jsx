@@ -7,28 +7,29 @@ import {
   User, 
   FileSpreadsheet, 
   Check, 
-  ShieldAlert, 
+  Clock,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Tag
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-const CATEGORY_STYLES = {
-  'Roads & Transport': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'Sanitation & Waste': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  'Water Supply & Drainage': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  'Electrical & Streetlights': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  'Parks & Public Spaces': 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+const CATEGORY_COLORS = {
+  'Roads & Transport': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+  'Sanitation & Waste': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+  'Water Supply & Drainage': 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+  'Electrical & Streetlights': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+  'Parks & Public Spaces': 'text-teal-400 bg-teal-500/10 border-teal-500/20'
 };
 
-const PRIORITY_BADGES = {
-  'Critical': 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  'High': 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-  'Medium': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  'Low': 'bg-slate-500/10 text-slate-400 border-slate-500/30'
+const PRIORITY_COLORS = {
+  'Critical': { badge: 'bg-rose-500/10 text-rose-300 border-rose-500/30', dot: 'bg-rose-400' },
+  'High': { badge: 'bg-orange-500/10 text-orange-300 border-orange-500/30', dot: 'bg-orange-400' },
+  'Medium': { badge: 'bg-amber-500/10 text-amber-300 border-amber-500/30', dot: 'bg-amber-400' },
+  'Low': { badge: 'bg-slate-500/10 text-slate-300 border-slate-500/30', dot: 'bg-slate-400' }
 };
 
-const STATUS_BADGES = {
+const STATUS_CONFIGS = {
   'Pending Review': 'bg-amber-500/10 text-amber-300 border-amber-500/30',
   'In Progress': 'bg-sky-500/10 text-sky-300 border-sky-500/30',
   'Resolved': 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
@@ -55,7 +56,7 @@ export default function IssueCard({
     setIsUpdating(true);
     if (newStatus === 'Resolved') {
       confetti({
-        particleCount: 50,
+        particleCount: 45,
         spread: 60,
         origin: { y: 0.7 }
       });
@@ -65,123 +66,132 @@ export default function IssueCard({
   };
 
   const formattedDate = issue.created_at 
-    ? new Date(issue.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    : 'Recently';
+    ? new Date(issue.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : 'Recent';
 
-  const categoryStyle = CATEGORY_STYLES[issue.category] || 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-  const priorityStyle = PRIORITY_BADGES[issue.priority] || 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-  const statusStyle = STATUS_BADGES[issue.status] || 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+  const categoryStyle = CATEGORY_COLORS[issue.category] || 'text-slate-300 bg-slate-800 border-slate-700';
+  const priorityStyle = PRIORITY_COLORS[issue.priority] || PRIORITY_COLORS['Medium'];
+  const statusBadge = STATUS_CONFIGS[issue.status] || 'bg-slate-800 text-slate-300 border-slate-700';
+
+  const ticketCode = issue.id.startsWith('g-') 
+    ? `CP-${issue.id.replace('g-', '')}` 
+    : `CP-${issue.id.slice(0, 5).toUpperCase()}`;
 
   return (
-    <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-slate-700 transition-all duration-300 flex flex-col justify-between group">
+    <div className="dashboard-card dashboard-card-hover rounded-xl p-4 border border-white/[0.08] flex flex-col justify-between group">
       
       <div>
-        {/* Top Badges Row */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${categoryStyle}`}>
-              {issue.category}
+        {/* Top Header: Ticket ID + Priority + Status */}
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.06]">
+          <div className="flex items-center space-x-2">
+            <span className="font-mono text-[11px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+              #{ticketCode}
             </span>
-            <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${priorityStyle}`}>
-              {issue.priority} Priority
+            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border flex items-center space-x-1 ${priorityStyle.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dot}`} />
+              <span>{issue.priority}</span>
             </span>
           </div>
 
-          <div className="flex items-center space-x-1.5">
-            <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${statusStyle}`}>
-              {issue.status}
-            </span>
-          </div>
+          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${statusBadge}`}>
+            {issue.status}
+          </span>
+        </div>
+
+        {/* Category Pill */}
+        <div className="mb-2">
+          <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-medium border ${categoryStyle}`}>
+            <Tag className="w-3 h-3" />
+            <span>{issue.category}</span>
+          </span>
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-sky-300 transition-colors leading-snug">
+        <h3 className="text-sm sm:text-base font-bold text-white mb-2 leading-snug group-hover:text-sky-300 transition-colors">
           {issue.title}
         </h3>
 
         {/* Description */}
-        <p className="text-slate-300 text-sm mb-4 line-clamp-3 leading-relaxed">
+        <p className="text-slate-300 text-xs sm:text-sm mb-3.5 line-clamp-3 leading-relaxed">
           {issue.description}
         </p>
 
-        {/* Attached Photo preview if present */}
+        {/* Attached Photo */}
         {issue.image_url && (
-          <div className="mb-4 rounded-xl overflow-hidden max-h-48 border border-slate-700/50 relative bg-slate-950">
+          <div className="mb-3.5 rounded-lg overflow-hidden border border-white/[0.08] relative bg-slate-950 aspect-video">
             <img 
               src={issue.image_url} 
               alt={issue.title}
-              className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>
         )}
 
-        {/* Location & Metadata */}
-        <div className="space-y-1.5 text-xs text-slate-400 mb-4 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-          <div className="flex items-center space-x-2 text-slate-300 font-medium">
+        {/* Metadata Details Box */}
+        <div className="bg-[#0D121D] p-2.5 rounded-lg border border-white/[0.06] space-y-1.5 mb-3.5 text-xs text-slate-400">
+          <div className="flex items-center space-x-2 text-slate-200 font-medium">
             <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
             <span className="truncate">{issue.location}</span>
           </div>
-          <div className="flex items-center justify-between pt-1 border-t border-slate-700/40">
-            <div className="flex items-center space-x-1.5">
-              <User className="w-3 h-3 text-slate-400" />
-              <span>{issue.reported_by_name || 'Anonymous Citizen'}</span>
+          <div className="flex items-center justify-between pt-1 border-t border-white/[0.04] text-[11px]">
+            <div className="flex items-center space-x-1.5 text-slate-400">
+              <User className="w-3 h-3" />
+              <span className="truncate max-w-[130px]">{issue.reported_by_name || 'Citizen'}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Calendar className="w-3 h-3 text-slate-400" />
+            <div className="flex items-center space-x-1 text-slate-500">
+              <Calendar className="w-3 h-3" />
               <span>{formattedDate}</span>
             </div>
           </div>
         </div>
 
-        {/* Resolution Notes if Resolved */}
+        {/* Resolution Notes */}
         {issue.resolution_notes && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-xs text-emerald-200">
-            <span className="font-semibold block mb-0.5 text-emerald-300">Municipal Action:</span>
+          <div className="mb-3.5 p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-200">
+            <span className="font-semibold text-emerald-300 block mb-0.5">Dispatched Action:</span>
             {issue.resolution_notes}
           </div>
         )}
       </div>
 
-      {/* Bottom Action Footer */}
-      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-        {/* Upvote Button */}
+      {/* Action Footer */}
+      <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2">
+        {/* Upvote Pill */}
         <button
           onClick={handleUpvoteClick}
-          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+          className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border transition-all ${
             hasUpvoted 
-              ? 'bg-sky-500/20 text-sky-300 border-sky-500/40 shadow-sm' 
-              : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+              ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' 
+              : 'bg-[#161D2B] text-slate-300 border-white/[0.08] hover:border-white/[0.16] hover:text-white'
           }`}
-          title="Upvote this grievance to increase priority"
+          title="Upvote grievance"
         >
-          <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? 'text-sky-400 fill-sky-400' : ''}`} />
-          <span>{issue.upvotes || 0}</span>
-          <span className="hidden sm:inline">Upvotes</span>
+          <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? 'text-sky-400 fill-sky-400' : 'text-slate-400'}`} />
+          <span className="font-mono">{issue.upvotes || 0}</span>
         </button>
 
-        {/* Status Dropdown (Admin / Staff Workflow) */}
+        {/* Staff Status Dropdown & Delete */}
         <div className="flex items-center space-x-1.5">
           <select
             value={issue.status}
             onChange={handleStatusSelect}
             disabled={isUpdating}
-            className="bg-slate-800 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-500 transition-colors cursor-pointer"
-            title="Update grievance status (Staff action)"
+            className="bg-[#161D2B] text-slate-200 text-xs rounded-md px-2 py-1 border border-white/[0.08] focus:outline-none focus:border-sky-500 cursor-pointer"
+            title="Change status"
           >
             <option value="Pending Review">Pending</option>
             <option value="In Progress">In Progress</option>
             <option value="Resolved">Resolved</option>
           </select>
 
-          {/* Delete Action */}
           <button
             onClick={() => onDelete(issue.id)}
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
-            title="Delete / Withdraw grievance"
+            className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors"
+            title="Withdraw ticket"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
