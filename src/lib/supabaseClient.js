@@ -36,13 +36,15 @@ export function clearSupabaseConfig() {
 }
 
 let supabaseInstance = null;
+let supabaseInstanceUrl = null;
+let supabaseInstanceAnonKey = null;
 
 export function getSupabase() {
   const { url, anonKey } = getStoredSupabaseConfig();
   if (!url || !anonKey) {
     return null;
   }
-  if (!supabaseInstance || supabaseInstance.supabaseUrl !== url) {
+  if (!supabaseInstance || supabaseInstanceUrl !== url || supabaseInstanceAnonKey !== anonKey) {
     try {
       supabaseInstance = createClient(url, anonKey, {
         auth: {
@@ -50,6 +52,8 @@ export function getSupabase() {
           autoRefreshToken: true
         }
       });
+      supabaseInstanceUrl = url;
+      supabaseInstanceAnonKey = anonKey;
     } catch (err) {
       console.warn("Failed to initialize Supabase client:", err);
       return null;
@@ -152,29 +156,54 @@ export function authenticateLocalUser(email, password) {
 
 // ----------------- CRUD API HELPERS -----------------
 
+export function isValidUUID(str) {
+  if (!str || typeof str !== 'string') return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+}
+
 export async function apiFetchGrievances() {
   const client = getSupabase();
   if (!client) return { data: null, isLive: false };
   
-  const { data, error } = await client
-    .from('grievances')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await client
+      .from('grievances')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error("Supabase fetch error:", error);
-    throw error;
+    if (error) {
+      console.warn("Supabase fetch notice:", error.message || error);
+      return { data: null, isLive: false, error: error.message };
+    }
+    return { data, isLive: true };
+  } catch (err) {
+    console.warn("Supabase fetch exception:", err);
+    return { data: null, isLive: false, error: err.message };
   }
-  return { data, isLive: true };
 }
 
 export async function apiCreateGrievance(item) {
   const client = getSupabase();
   if (!client) return { data: null, isLive: false };
 
+  // Sanitize payload: strip client-only properties and ensure valid UUID for user_id
+  const payload = {
+    title: item.title,
+    description: item.description,
+    category: item.category,
+    status: item.status || 'Pending Review',
+    priority: item.priority || 'Medium',
+    location: item.location,
+    reported_by_name: item.reported_by_name,
+    reported_by_email: item.reported_by_email,
+    user_id: isValidUUID(item.user_id) ? item.user_id : null,
+    upvotes: item.upvotes || 1,
+    image_url: item.image_url || null
+  };
+
   const { data, error } = await client
     .from('grievances')
-    .insert([item])
+    .insert([payload])
     .select()
     .single();
 
@@ -187,7 +216,7 @@ export async function apiCreateGrievance(item) {
 
 export async function apiUpdateGrievanceStatus(id, status, notes = null) {
   const client = getSupabase();
-  if (!client) return { isLive: false };
+  if (!client || !isValidUUID(id)) return { isLive: false };
 
   const updatePayload = { status };
   if (notes) updatePayload.resolution_notes = notes;
@@ -199,13 +228,16 @@ export async function apiUpdateGrievanceStatus(id, status, notes = null) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.warn("Supabase status update error:", error);
+    return { isLive: false };
+  }
   return { data, isLive: true };
 }
 
 export async function apiUpvoteGrievance(id, newCount) {
   const client = getSupabase();
-  if (!client) return { isLive: false };
+  if (!client || !isValidUUID(id)) return { isLive: false };
 
   const { data, error } = await client
     .from('grievances')
@@ -214,20 +246,26 @@ export async function apiUpvoteGrievance(id, newCount) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.warn("Supabase upvote error:", error);
+    return { isLive: false };
+  }
   return { data, isLive: true };
 }
 
 export async function apiDeleteGrievance(id) {
   const client = getSupabase();
-  if (!client) return { isLive: false };
+  if (!client || !isValidUUID(id)) return { isLive: false };
 
   const { error } = await client
     .from('grievances')
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {
+    console.warn("Supabase delete error:", error);
+    return { isLive: false };
+  }
   return { isLive: true };
 }
 
