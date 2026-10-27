@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { X, Send, MapPin, Image as ImageIcon, AlertCircle } from 'lucide-react';
 
 const PRESET_PHOTOS = [
-  { label: "Pothole", url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80" },
-  { label: "Garbage", url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80" },
-  { label: "Streetlight", url: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=800&q=80" },
-  { label: "Water Leak", url: "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=800&q=80" }
+  { label: "Pothole", url: "/issues/pothole-road.png" },
+  { label: "Clogged Drain", url: "/issues/drain-clog.png" },
+  { label: "Road Cave-In", url: "/issues/pipeline-cavein.png" },
+  { label: "Electric Fire", url: "/issues/electric-fire.png" }
 ];
 
 export default function IssueModal({ isOpen, onClose, onSubmit, currentUser }) {

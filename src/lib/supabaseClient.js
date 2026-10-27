@@ -4,6 +4,11 @@ const STORAGE_KEY_URL = 'civicpulse_supabase_url';
 const STORAGE_KEY_ANON = 'civicpulse_supabase_anon';
 const STORAGE_KEY_LOCAL_USERS = 'civicpulse_registered_users';
 
+export function sanitizeSupabaseUrl(url) {
+  if (!url) return '';
+  return url.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+}
+
 export function getStoredSupabaseConfig() {
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -11,14 +16,16 @@ export function getStoredSupabaseConfig() {
   const storedUrl = localStorage.getItem(STORAGE_KEY_URL);
   const storedAnon = localStorage.getItem(STORAGE_KEY_ANON);
 
+  const rawUrl = storedUrl || (envUrl && envUrl !== 'https://your-project-ref.supabase.co' ? envUrl : '');
+
   return {
-    url: storedUrl || (envUrl && envUrl !== 'https://your-project-ref.supabase.co' ? envUrl : ''),
+    url: sanitizeSupabaseUrl(rawUrl),
     anonKey: storedAnon || (envAnon && envAnon !== 'your-anon-key-here' ? envAnon : '')
   };
 }
 
 export function saveSupabaseConfig(url, anonKey) {
-  if (url) localStorage.setItem(STORAGE_KEY_URL, url.trim());
+  if (url) localStorage.setItem(STORAGE_KEY_URL, sanitizeSupabaseUrl(url));
   if (anonKey) localStorage.setItem(STORAGE_KEY_ANON, anonKey.trim());
 }
 

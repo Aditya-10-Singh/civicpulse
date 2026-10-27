@@ -5,6 +5,7 @@ import IssueCard from './components/IssueCard';
 import IssueTable from './components/IssueTable';
 import IssueModal from './components/IssueModal';
 import AuthModal from './components/AuthModal';
+import AuthScreen from './components/AuthScreen';
 import SheetsDrawer from './components/SheetsDrawer';
 import ConfigBanner from './components/ConfigBanner';
 import VivaGuideModal from './components/VivaGuideModal';
@@ -32,23 +33,17 @@ import {
   LayoutGrid, 
   List, 
   CheckCircle2, 
-  AlertCircle, 
-  Sparkles, 
-  Filter,
   Plus,
-  RefreshCw,
-  FileSpreadsheet,
-  MapPin,
   Building2,
   SlidersHorizontal,
-  Database,
-  UserCheck
+  Database
 } from 'lucide-react';
 
 export default function App() {
   const [issues, setIssues] = useState(INITIAL_MOCK_ISSUES);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isGuestMode, setIsGuestMode] = useState(false);
   
   // View mode: 'grid' or 'table'
   const [viewMode, setViewMode] = useState('grid');
@@ -64,8 +59,7 @@ export default function App() {
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [selectedStatusTab, setSelectedStatusTab] = useState('ALL'); // 'ALL', 'MY_ISSUES', 'PENDING', 'PROGRESS', 'RESOLVED', 'CRITICAL'
-  const [sortBy, setSortBy] = useState('Newest');
+  const [selectedStatusTab, setSelectedStatusTab] = useState('ALL'); // 'ALL', 'MY_ISSUES', 'CRITICAL', 'PROGRESS', 'RESOLVED'
 
   // Toast alert
   const [toast, setToast] = useState(null);
@@ -144,7 +138,7 @@ export default function App() {
     }
 
     setIssues(prev => [newItem, ...prev]);
-    showToast("Civic grievance ticket registered successfully!");
+    showToast("Grievance ticket dispatched successfully!");
 
     // Background sync to Google Sheets
     try {
@@ -191,7 +185,7 @@ export default function App() {
 
   // CRUD: Delete
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to withdraw/delete this grievance ticket?")) {
+    if (!window.confirm("Are you sure you want to withdraw this grievance ticket?")) {
       return;
     }
 
@@ -204,13 +198,14 @@ export default function App() {
     }
 
     setIssues(prev => prev.filter(item => item.id !== id));
-    showToast("Ticket withdrawn and archived.", "info");
+    showToast("Ticket removed.", "info");
   };
 
   // Auth Logout
   const handleLogout = async () => {
     await apiSignOut();
     setCurrentUser(null);
+    setIsGuestMode(false);
     showToast("Signed out successfully", "info");
   };
 
@@ -218,10 +213,9 @@ export default function App() {
   const countAll = issues.length;
   const myEmail = currentUser?.email?.toLowerCase();
   const countMyIssues = myEmail ? issues.filter(i => (i.reported_by_email || '').toLowerCase() === myEmail).length : 0;
-  const countPending = issues.filter(i => i.status === 'Pending Review').length;
+  const countCritical = issues.filter(i => i.priority === 'Critical').length;
   const countProgress = issues.filter(i => i.status === 'In Progress').length;
   const countResolved = issues.filter(i => i.status === 'Resolved').length;
-  const countCritical = issues.filter(i => i.priority === 'Critical').length;
 
   // Filtered & Sorted issues
   const filteredIssues = useMemo(() => {
@@ -237,31 +231,40 @@ export default function App() {
       let matchesTab = true;
       if (selectedStatusTab === 'MY_ISSUES') {
         matchesTab = Boolean(myEmail && (item.reported_by_email || '').toLowerCase() === myEmail);
-      } else if (selectedStatusTab === 'PENDING') matchesTab = item.status === 'Pending Review';
+      } else if (selectedStatusTab === 'CRITICAL') matchesTab = item.priority === 'Critical';
       else if (selectedStatusTab === 'PROGRESS') matchesTab = item.status === 'In Progress';
       else if (selectedStatusTab === 'RESOLVED') matchesTab = item.status === 'Resolved';
-      else if (selectedStatusTab === 'CRITICAL') matchesTab = item.priority === 'Critical';
 
       return matchesSearch && matchesCategory && matchesTab;
     }).sort((a, b) => {
-      if (sortBy === 'Upvoted') {
-        return (b.upvotes || 0) - (a.upvotes || 0);
-      }
-      if (sortBy === 'Critical') {
-        const priorityScore = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
-        return (priorityScore[b.priority] || 0) - (priorityScore[a.priority] || 0);
-      }
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
-  }, [issues, searchQuery, selectedCategory, selectedStatusTab, sortBy, myEmail]);
+  }, [issues, searchQuery, selectedCategory, selectedStatusTab, myEmail]);
 
+  // If NOT logged in and NOT in guest mode: Show Clean Dedicated Auth Screen First!
+  if (!currentUser && !isGuestMode) {
+    return (
+      <AuthScreen
+        onAuthSuccess={(user) => {
+          setCurrentUser(user);
+          showToast(`Welcome back, ${user.user_metadata?.full_name || user.email}!`);
+        }}
+        onContinueAsGuest={() => {
+          setIsGuestMode(true);
+          showToast("Viewing as guest. Sign in anytime from the top bar.", "info");
+        }}
+      />
+    );
+  }
+
+  // Once Authenticated or Guest: Clean, Focused, Uncluttered Dashboard
   return (
-    <div className="min-h-screen bg-[#0B0F17] text-slate-200 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen bg-[#090D16] text-slate-200 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       
       {/* Toast Alert */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
-          <div className={`px-4 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-semibold flex items-center space-x-2 ${
+        <div className="fixed bottom-5 right-5 z-50 animate-fade-in">
+          <div className={`px-4 py-2.5 rounded-xl shadow-2xl border text-xs font-semibold flex items-center space-x-2 ${
             toast.type === 'info' 
               ? 'bg-[#111724] text-sky-300 border-sky-500/30' 
               : 'bg-[#111724] text-emerald-300 border-emerald-500/40'
@@ -272,12 +275,11 @@ export default function App() {
         </div>
       )}
 
-      {/* Navbar */}
+      {/* Clean Navbar */}
       <Navbar
         isSupabaseLive={isSupabaseLive}
         isSheetsLive={isSheetsLive}
         user={currentUser}
-        issuesCount={issues.length}
         onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenSheetsDrawer={() => setIsSheetsDrawerOpen(true)}
@@ -287,198 +289,110 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {/* Dashboard Sub-Header / Control Strip */}
-      <div className="border-b border-white/[0.06] bg-[#0E131F]/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            
-            {/* Title & Metadata Badges */}
-            <div>
-              <div className="flex items-center space-x-2 mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Civic Infrastructure & Redressal Desk
-                </h1>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                  LIVE PIPELINE
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 flex items-center space-x-3">
-                <span>Relational PostgreSQL + Real-Time Google Sheets Webhooks</span>
-                <span className="text-slate-600 hidden sm:inline">•</span>
-                <span className="hidden sm:inline text-sky-400/90 font-medium">Developed by Aditya Singh</span>
-              </p>
-            </div>
-
-            {/* Quick Action Tools */}
-            <div className="flex items-center space-x-2 shrink-0">
-              
-              {/* Database & Users Inspector */}
-              <button
-                onClick={() => setIsDbModalOpen(true)}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-sky-300 border border-sky-500/30 hover:bg-[#1E273A] transition-colors"
-                title="View registered users and grievance relations"
-              >
-                <Database className="w-3.5 h-3.5 text-sky-400" />
-                <span>DB & Users Inspector</span>
-              </button>
-
-              {/* Sheets Hub Button */}
-              <button
-                onClick={() => setIsSheetsDrawerOpen(true)}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] hover:text-white transition-colors"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Sheets Sync</span>
-              </button>
-
-              {/* Log Ticket Button */}
-              <button
-                onClick={() => setIsReportModalOpen(true)}
-                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white shadow-sm shadow-sky-500/20 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>New Grievance Ticket</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* Main Body */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full">
         
-        {/* KPI Statistics Box */}
+        {/* Clean KPI Overview */}
         <StatCards issues={issues} />
 
-        {/* Toolbar: Status Tabs + Search + View Mode Switcher */}
-        <div className="space-y-3 mb-6">
+        {/* Clean Filter Toolbar (Linear Style) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5 pb-3 border-b border-white/[0.06]">
           
-          {/* Top Row: Segmented Status Tabs */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 overflow-x-auto">
-            <div className="flex items-center space-x-1">
-              {[
-                { id: 'ALL', label: 'All Tickets', count: countAll },
-                ...(currentUser ? [{ id: 'MY_ISSUES', label: 'My Reported Tickets', count: countMyIssues, color: 'text-sky-300 font-bold' }] : []),
-                { id: 'CRITICAL', label: 'Critical Hazards', count: countCritical, color: 'text-rose-400' },
-                { id: 'PROGRESS', label: 'In Progress', count: countProgress, color: 'text-amber-400' },
-                { id: 'RESOLVED', label: 'Resolved Archive', count: countResolved, color: 'text-emerald-400' },
-                { id: 'PENDING', label: 'Pending Review', count: countPending }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedStatusTab(tab.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 whitespace-nowrap ${
-                    selectedStatusTab === tab.id
-                      ? 'bg-white/[0.08] text-white font-semibold border border-white/[0.12]'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.02]'
-                  }`}
-                >
-                  <span className={tab.color || ''}>{tab.label}</span>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                    selectedStatusTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {tab.count}
-                  </span>
-                </button>
-              ))}
+          {/* Status Tabs */}
+          <div className="flex items-center space-x-1 overflow-x-auto pb-1 md:pb-0">
+            {[
+              { id: 'ALL', label: 'All Issues', count: countAll },
+              ...(currentUser ? [{ id: 'MY_ISSUES', label: 'My Tickets', count: countMyIssues, color: 'text-sky-400' }] : []),
+              { id: 'CRITICAL', label: 'Critical', count: countCritical, color: 'text-rose-400' },
+              { id: 'PROGRESS', label: 'In Progress', count: countProgress, color: 'text-amber-400' },
+              { id: 'RESOLVED', label: 'Resolved', count: countResolved, color: 'text-emerald-400' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedStatusTab(tab.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 whitespace-nowrap ${
+                  selectedStatusTab === tab.id
+                    ? 'bg-white/[0.08] text-white font-semibold border border-white/[0.12]'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.03]'
+                }`}
+              >
+                <span className={tab.color || ''}>{tab.label}</span>
+                <span className="text-[10px] font-mono opacity-60">
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Right: Search, Category Filter, and View Switcher */}
+          <div className="flex items-center space-x-2">
+            
+            {/* Search Box */}
+            <div className="relative w-48 sm:w-60">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search issues..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#111724] border border-white/[0.08] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+              />
             </div>
 
-            {/* View Mode Switcher (Grid vs Table) */}
-            <div className="flex items-center space-x-1 bg-[#111724] p-1 rounded-lg border border-white/[0.08] shrink-0 ml-2">
+            {/* Category Dropdown */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-[#111724] border border-white/[0.08] text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-500 cursor-pointer"
+            >
+              {CATEGORIES.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* Grid vs Table View Mode */}
+            <div className="flex items-center bg-[#111724] p-0.5 rounded-lg border border-white/[0.08] shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`p-1 rounded-md text-xs transition-colors ${
                   viewMode === 'grid' 
-                    ? 'bg-sky-500 text-white shadow-sm' 
+                    ? 'bg-sky-500 text-white' 
                     : 'text-slate-400 hover:text-white'
                 }`}
-                title="Card Grid View"
+                title="Card Grid"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`p-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`p-1 rounded-md text-xs transition-colors ${
                   viewMode === 'table' 
-                    ? 'bg-sky-500 text-white shadow-sm' 
+                    ? 'bg-sky-500 text-white' 
                     : 'text-slate-400 hover:text-white'
                 }`}
-                title="Data Table View"
+                title="Data Table"
               >
                 <List className="w-3.5 h-3.5" />
               </button>
             </div>
-          </div>
-
-          {/* Bottom Row: Search & Filters */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                placeholder="Search ticket title, ward landmark, or description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#111724] border border-white/[0.08] rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
-              />
-            </div>
-
-            {/* Filter Dropdowns */}
-            <div className="flex items-center space-x-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-[#111724] border border-white/[0.08] text-slate-300 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
-              >
-                {CATEGORIES.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-[#111724] border border-white/[0.08] text-slate-300 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-sky-500 cursor-pointer"
-              >
-                <option value="Newest">Newest First</option>
-                <option value="Upvoted">Most Upvoted</option>
-                <option value="Critical">Critical Priority</option>
-              </select>
-            </div>
 
           </div>
 
         </div>
 
-        {/* Display Counter */}
-        <div className="flex items-center justify-between text-xs text-slate-500 mb-3 px-1">
-          <span>Showing {filteredIssues.length} tickets</span>
-          {(searchQuery || selectedCategory !== 'All Categories' || selectedStatusTab !== 'ALL') && (
-            <button
-              onClick={() => { setSearchQuery(''); setSelectedCategory('All Categories'); setSelectedStatusTab('ALL'); }}
-              className="text-sky-400 hover:underline"
-            >
-              Reset active filters
-            </button>
-          )}
-        </div>
-
-        {/* Content Display: Card Grid or Data Table */}
+        {/* Issues Container: Card Grid or Data Table */}
         {filteredIssues.length === 0 ? (
-          <div className="dashboard-card rounded-xl p-12 text-center border border-white/[0.08] my-6">
-            <Building2 className="w-10 h-10 text-slate-600 mx-auto mb-2.5" />
-            <h3 className="text-base font-bold text-white mb-1">No matching tickets found</h3>
+          <div className="bg-[#111724] rounded-xl p-12 text-center border border-white/[0.08] my-6">
+            <Building2 className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+            <h3 className="text-sm font-bold text-white mb-1">No matching grievances found</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
-              Try adjusting your search query, or select another category or status tab.
+              Try adjusting your search terms or filter selection.
             </p>
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-colors"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-colors"
             >
-              + Log New Grievance
+              + Report New Grievance
             </button>
           </div>
         ) : viewMode === 'grid' ? (
@@ -505,26 +419,21 @@ export default function App() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-white/[0.06] bg-[#0E131F] py-6 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold text-slate-300">CivicPulse</span>
-            <span>• Developed by Aditya Singh</span>
-            <span>• Assessment Ready</span>
-          </div>
-          <div className="flex items-center space-x-4 text-slate-400">
-            <button onClick={() => setIsDbModalOpen(true)} className="hover:text-sky-400 transition-colors">
-              Database & Users Inspector
-            </button>
+      {/* Minimal Footer */}
+      <footer className="mt-auto border-t border-white/[0.06] bg-[#0B0F17] py-4 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>CivicPulse • Developed by Aditya Singh</span>
+          <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
             <button onClick={() => setIsVivaModalOpen(true)} className="hover:text-purple-400 transition-colors">
-              Assessment Guide (8/8)
+              Assessment Rubric (8/8)
             </button>
+            <span>•</span>
             <button onClick={() => setIsSheetsDrawerOpen(true)} className="hover:text-emerald-400 transition-colors">
-              Google Sheets Sync
+              Google Sheets
             </button>
-            <button onClick={() => setIsConfigModalOpen(true)} className="hover:text-sky-400 transition-colors">
-              Supabase Configuration
+            <span>•</span>
+            <button onClick={() => setIsDbModalOpen(true)} className="hover:text-sky-400 transition-colors">
+              Database Inspector
             </button>
           </div>
         </div>
