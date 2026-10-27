@@ -104,6 +104,20 @@ export default function App() {
 
   useEffect(() => {
     loadData();
+
+    // Listen to real-time Supabase Auth state changes (e.g. 1-click email link verification)
+    const client = getSupabase();
+    if (client) {
+      const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+          setCurrentUser(session.user);
+          showToast(`Verified! Welcome back, ${session.user.user_metadata?.full_name || session.user.email}`);
+        }
+      });
+      return () => {
+        subscription?.unsubscribe();
+      };
+    }
   }, []);
 
   // CRUD: Create

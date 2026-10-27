@@ -295,11 +295,13 @@ export async function apiSendEmailOtp(email, fullName = 'Citizen') {
   // 1. Send via Supabase Auth Email OTP
   if (client) {
     try {
+      const redirectUrl = typeof window !== 'undefined' ? window.location.origin : undefined;
       const { data, error } = await client.auth.signInWithOtp({
         email: cleanEmail,
         options: {
           data: { full_name: fullName.trim() || 'Citizen' },
-          shouldCreateUser: true
+          shouldCreateUser: true,
+          emailRedirectTo: redirectUrl
         }
       });
       if (error) {
