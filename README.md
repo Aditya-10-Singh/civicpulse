@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 Assessment Criteria Alignment (8 / 8 Checklist)
+## 📋 Assessment Criteria Alignment
 
 | No. | Assessment Question | Implementation in CivicPulse |
 |:---:|:---|:---|
@@ -50,7 +50,7 @@ Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## ⚡ Connecting Live Supabase Database (Criterion #6 & #7)
+## ⚡ Connecting Live Supabase Database
 
 1. Create a free project at [database.new](https://database.new) (Supabase).
 2. Navigate to **SQL Editor** in your Supabase Dashboard.
@@ -65,7 +65,7 @@ Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 📊 Connecting Google Sheets Webhook (Criterion #5)
+## 📊 Connecting Google Sheets Webhook
 
 1. Open a new Google Sheet at [sheets.new](https://sheets.new). Rename the tab to `Grievances`.
 2. Go to **Extensions > Apps Script**.
@@ -82,7 +82,7 @@ Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 🚢 Deploying to Vercel (Criterion #8)
+## 🚢 Deploying to Vercel
 
 1. Push this project to your GitHub repository:
    ```bash
