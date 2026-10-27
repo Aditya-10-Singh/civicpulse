@@ -84,7 +84,11 @@ export default function AuthScreen({ onAuthSuccess, onContinueAsGuest }) {
         setRateLimitNotice(res.rateLimitWarning);
       }
 
-      setSuccessMsg(`Verification code sent to ${email}. Check your email inbox!`);
+      setSuccessMsg(
+        res.rateLimitWarning 
+          ? `Note: ${res.rateLimitWarning} Use the active code below or check spam.` 
+          : `Verification code dispatched! Check your Inbox and Spam/Promotions folder.`
+      );
 
       // Focus first digit box
       setTimeout(() => {
@@ -250,11 +254,16 @@ export default function AuthScreen({ onAuthSuccess, onContinueAsGuest }) {
                 </div>
               )}
 
-              {/* Developer / Fallback Display */}
+              {/* Instant Verification Code Display */}
               {activeOtpCode && (
-                <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200/80 text-[11px] text-purple-800 mb-5 flex items-center justify-between">
-                  <span>💡 Active Code: <strong className="font-mono text-purple-900 tracking-widest text-xs">{activeOtpCode}</strong></span>
-                  <span className="text-[10px] text-purple-600 font-mono">(or use 123456)</span>
+                <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 mb-5 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-purple-800">Your Verification Code:</span>
+                    <span className="font-mono text-base font-extrabold text-purple-700 tracking-widest">{activeOtpCode}</span>
+                  </div>
+                  <p className="text-[11px] text-purple-600">
+                    Check your Gmail Spam/Updates tab, or enter the code above (or <strong>123456</strong>) to continue right now.
+                  </p>
                 </div>
               )}
 
