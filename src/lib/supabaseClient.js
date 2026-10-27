@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const STORAGE_KEY_URL = 'civicpulse_supabase_url';
 const STORAGE_KEY_ANON = 'civicpulse_supabase_anon';
+const STORAGE_KEY_LOCAL_USERS = 'civicpulse_registered_users';
 
 export function getStoredSupabaseConfig() {
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -51,6 +52,94 @@ export function getSupabase() {
 
 export function isSupabaseConfigured() {
   return Boolean(getSupabase());
+}
+
+// ----------------- LOCAL USER REGISTRY (DEMO & OFFLINE) -----------------
+
+const DEFAULT_USERS = [
+  {
+    id: "usr-aditya-101",
+    email: "aditya.singh00552@gmail.com",
+    password: "password123",
+    fullName: "Aditya Singh",
+    role: "Lead Developer / Citizen",
+    createdAt: "2026-10-24T10:00:00.000Z"
+  },
+  {
+    id: "usr-pooja-102",
+    email: "pooja.sharma@example.com",
+    password: "password123",
+    fullName: "Pooja Sharma",
+    role: "Resident - Sector 14",
+    createdAt: "2026-10-23T14:30:00.000Z"
+  },
+  {
+    id: "usr-rohit-103",
+    email: "rohit.verma@example.com",
+    password: "password123",
+    fullName: "Rohit Verma",
+    role: "Ward Inspector",
+    createdAt: "2026-10-22T09:15:00.000Z"
+  }
+];
+
+export function getRegisteredUsers() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY_LOCAL_USERS);
+    if (!data) {
+      localStorage.setItem(STORAGE_KEY_LOCAL_USERS, JSON.stringify(DEFAULT_USERS));
+      return DEFAULT_USERS;
+    }
+    return JSON.parse(data);
+  } catch (err) {
+    return DEFAULT_USERS;
+  }
+}
+
+export function registerLocalUser(email, password, fullName) {
+  const users = getRegisteredUsers();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const exists = users.find(u => u.email.toLowerCase() === normalizedEmail);
+  if (exists) {
+    throw new Error("An account with this email already exists. Please Sign In.");
+  }
+
+  const newUser = {
+    id: "usr-" + Date.now().toString().slice(-6),
+    email: normalizedEmail,
+    password: password.trim(),
+    fullName: fullName.trim(),
+    role: "Registered Citizen",
+    createdAt: new Date().toISOString()
+  };
+
+  const updated = [newUser, ...users];
+  localStorage.setItem(STORAGE_KEY_LOCAL_USERS, JSON.stringify(updated));
+  return newUser;
+}
+
+export function authenticateLocalUser(email, password) {
+  const users = getRegisteredUsers();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
+  if (!user) {
+    throw new Error("Account not found with this email. Please register first!");
+  }
+
+  if (user.password !== password.trim()) {
+    throw new Error("Incorrect password. Please verify and try again.");
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    user_metadata: {
+      full_name: user.fullName,
+      role: user.role
+    }
+  };
 }
 
 // ----------------- CRUD API HELPERS -----------------
@@ -138,7 +227,9 @@ export async function apiDeleteGrievance(id) {
 
 export async function apiSignUp(email, password, fullName) {
   const client = getSupabase();
-  if (!client) throw new Error("Supabase is not configured yet.");
+  if (!client) {
+    return registerLocalUser(email, password, fullName);
+  }
 
   const { data, error } = await client.auth.signUp({
     email,
@@ -153,14 +244,16 @@ export async function apiSignUp(email, password, fullName) {
 
 export async function apiSignIn(email, password) {
   const client = getSupabase();
-  if (!client) throw new Error("Supabase is not configured yet.");
+  if (!client) {
+    return authenticateLocalUser(email, password);
+  }
 
   const { data, error } = await client.auth.signInWithPassword({
     email,
     password
   });
   if (error) throw error;
-  return data;
+  return data.user;
 }
 
 export async function apiSignOut() {

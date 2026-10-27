@@ -10,7 +10,7 @@ import {
   GraduationCap,
   ChevronDown,
   CheckCircle,
-  Radio
+  Users
 } from 'lucide-react';
 
 export default function Navbar({
@@ -23,6 +23,7 @@ export default function Navbar({
   onOpenSheetsDrawer,
   onOpenConfigModal,
   onOpenVivaModal,
+  onOpenDbModal,
   onLogout
 }) {
   return (
@@ -71,16 +72,27 @@ export default function Navbar({
           </div>
 
           {/* Right Action Toolbar */}
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2">
             
+            {/* Database & Users Inspector Button */}
+            <button
+              onClick={onOpenDbModal}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/25 hover:bg-sky-500/20 hover:text-white transition-colors"
+              title="Inspect Registered Users and Raised Grievances in Database"
+            >
+              <Database className="w-3.5 h-3.5 text-sky-400" />
+              <span className="hidden sm:inline">Database & Users</span>
+              <span className="sm:hidden">DB</span>
+            </button>
+
             {/* Assessment Rubric Guide Button */}
             <button
               onClick={onOpenVivaModal}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/25 hover:bg-purple-500/20 hover:text-white transition-colors"
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/25 hover:bg-purple-500/20 hover:text-white transition-colors"
               title="View Viva / Rubric Evaluation Guide"
             >
               <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
-              <span>Assessment Guide</span>
+              <span className="hidden md:inline">Assessment Guide</span>
               <span className="bg-purple-500/30 text-purple-200 text-[10px] px-1.5 py-0.2 rounded font-mono">
                 8/8
               </span>
@@ -89,7 +101,7 @@ export default function Navbar({
             {/* Google Sheets Trigger */}
             <button
               onClick={onOpenSheetsDrawer}
-              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-slate-200 border border-white/[0.08] hover:border-white/[0.16] hover:bg-[#1C2436] transition-colors"
+              className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-slate-200 border border-white/[0.08] hover:border-white/[0.16] hover:bg-[#1C2436] transition-colors"
               title="Open Google Sheets Live Hub"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
@@ -108,10 +120,11 @@ export default function Navbar({
             {/* Report Grievance CTA */}
             <button
               onClick={onOpenReportModal}
-              className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white shadow-sm shadow-sky-500/20 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white shadow-sm shadow-sky-500/20 transition-colors"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Log Grievance</span>
+              <span className="hidden sm:inline">Log Grievance</span>
+              <span className="sm:hidden">Log</span>
             </button>
 
             {/* Auth / Profile */}

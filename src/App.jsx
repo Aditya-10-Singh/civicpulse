@@ -8,6 +8,7 @@ import AuthModal from './components/AuthModal';
 import SheetsDrawer from './components/SheetsDrawer';
 import ConfigBanner from './components/ConfigBanner';
 import VivaGuideModal from './components/VivaGuideModal';
+import DatabaseViewerModal from './components/DatabaseViewerModal';
 
 import { INITIAL_MOCK_ISSUES, CATEGORIES, STATUSES } from './data/mockIssues';
 import { 
@@ -39,7 +40,9 @@ import {
   FileSpreadsheet,
   MapPin,
   Building2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Database,
+  UserCheck
 } from 'lucide-react';
 
 export default function App() {
@@ -56,11 +59,12 @@ export default function App() {
   const [isSheetsDrawerOpen, setIsSheetsDrawerOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isVivaModalOpen, setIsVivaModalOpen] = useState(false);
+  const [isDbModalOpen, setIsDbModalOpen] = useState(false);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [selectedStatusTab, setSelectedStatusTab] = useState('ALL'); // 'ALL', 'PENDING', 'PROGRESS', 'RESOLVED', 'CRITICAL'
+  const [selectedStatusTab, setSelectedStatusTab] = useState('ALL'); // 'ALL', 'MY_ISSUES', 'PENDING', 'PROGRESS', 'RESOLVED', 'CRITICAL'
   const [sortBy, setSortBy] = useState('Newest');
 
   // Toast alert
@@ -109,6 +113,9 @@ export default function App() {
     let newItem = {
       ...formData,
       id: 'g-' + Date.now().toString().slice(-4),
+      user_id: currentUser?.id || 'usr-aditya-101',
+      reported_by_name: currentUser?.user_metadata?.full_name || formData.reported_by_name || 'Aditya Singh',
+      reported_by_email: currentUser?.email || formData.reported_by_email || 'aditya.singh00552@gmail.com',
       created_at: new Date().toISOString(),
       synced_to_sheets: false
     };
@@ -116,15 +123,16 @@ export default function App() {
     if (isSupabaseConfigured()) {
       try {
         const { data, isLive } = await apiCreateGrievance({
-          title: formData.title,
-          category: formData.category,
-          priority: formData.priority,
+          title: newItem.title,
+          category: newItem.category,
+          priority: newItem.priority,
           status: 'Pending Review',
-          location: formData.location,
-          description: formData.description,
-          reported_by_name: formData.reported_by_name,
-          reported_by_email: formData.reported_by_email,
-          image_url: formData.image_url || null,
+          location: newItem.location,
+          description: newItem.description,
+          reported_by_name: newItem.reported_by_name,
+          reported_by_email: newItem.reported_by_email,
+          user_id: currentUser?.id || null,
+          image_url: newItem.image_url || null,
           upvotes: 1
         });
         if (isLive && data) {
@@ -208,6 +216,8 @@ export default function App() {
 
   // Tab counts
   const countAll = issues.length;
+  const myEmail = currentUser?.email?.toLowerCase();
+  const countMyIssues = myEmail ? issues.filter(i => (i.reported_by_email || '').toLowerCase() === myEmail).length : 0;
   const countPending = issues.filter(i => i.status === 'Pending Review').length;
   const countProgress = issues.filter(i => i.status === 'In Progress').length;
   const countResolved = issues.filter(i => i.status === 'Resolved').length;
@@ -225,7 +235,9 @@ export default function App() {
         selectedCategory === 'All Categories' || item.category === selectedCategory;
 
       let matchesTab = true;
-      if (selectedStatusTab === 'PENDING') matchesTab = item.status === 'Pending Review';
+      if (selectedStatusTab === 'MY_ISSUES') {
+        matchesTab = Boolean(myEmail && (item.reported_by_email || '').toLowerCase() === myEmail);
+      } else if (selectedStatusTab === 'PENDING') matchesTab = item.status === 'Pending Review';
       else if (selectedStatusTab === 'PROGRESS') matchesTab = item.status === 'In Progress';
       else if (selectedStatusTab === 'RESOLVED') matchesTab = item.status === 'Resolved';
       else if (selectedStatusTab === 'CRITICAL') matchesTab = item.priority === 'Critical';
@@ -241,7 +253,7 @@ export default function App() {
       }
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
-  }, [issues, searchQuery, selectedCategory, selectedStatusTab, sortBy]);
+  }, [issues, searchQuery, selectedCategory, selectedStatusTab, sortBy, myEmail]);
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-slate-200 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
@@ -271,6 +283,7 @@ export default function App() {
         onOpenSheetsDrawer={() => setIsSheetsDrawerOpen(true)}
         onOpenConfigModal={() => setIsConfigModalOpen(true)}
         onOpenVivaModal={() => setIsVivaModalOpen(true)}
+        onOpenDbModal={() => setIsDbModalOpen(true)}
         onLogout={handleLogout}
       />
 
@@ -298,13 +311,24 @@ export default function App() {
 
             {/* Quick Action Tools */}
             <div className="flex items-center space-x-2 shrink-0">
+              
+              {/* Database & Users Inspector */}
+              <button
+                onClick={() => setIsDbModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-sky-300 border border-sky-500/30 hover:bg-[#1E273A] transition-colors"
+                title="View registered users and grievance relations"
+              >
+                <Database className="w-3.5 h-3.5 text-sky-400" />
+                <span>DB & Users Inspector</span>
+              </button>
+
               {/* Sheets Hub Button */}
               <button
                 onClick={() => setIsSheetsDrawerOpen(true)}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161D2B] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] hover:text-white transition-colors"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Sheets Sync Hub</span>
+                <span>Sheets Sync</span>
               </button>
 
               {/* Log Ticket Button */}
@@ -335,6 +359,7 @@ export default function App() {
             <div className="flex items-center space-x-1">
               {[
                 { id: 'ALL', label: 'All Tickets', count: countAll },
+                ...(currentUser ? [{ id: 'MY_ISSUES', label: 'My Reported Tickets', count: countMyIssues, color: 'text-sky-300 font-bold' }] : []),
                 { id: 'CRITICAL', label: 'Critical Hazards', count: countCritical, color: 'text-rose-400' },
                 { id: 'PROGRESS', label: 'In Progress', count: countProgress, color: 'text-amber-400' },
                 { id: 'RESOLVED', label: 'Resolved Archive', count: countResolved, color: 'text-emerald-400' },
@@ -489,6 +514,9 @@ export default function App() {
             <span>• Assessment Ready</span>
           </div>
           <div className="flex items-center space-x-4 text-slate-400">
+            <button onClick={() => setIsDbModalOpen(true)} className="hover:text-sky-400 transition-colors">
+              Database & Users Inspector
+            </button>
             <button onClick={() => setIsVivaModalOpen(true)} className="hover:text-purple-400 transition-colors">
               Assessment Guide (8/8)
             </button>
@@ -538,6 +566,12 @@ export default function App() {
       <VivaGuideModal
         isOpen={isVivaModalOpen}
         onClose={() => setIsVivaModalOpen(false)}
+      />
+
+      <DatabaseViewerModal
+        isOpen={isDbModalOpen}
+        onClose={() => setIsDbModalOpen(false)}
+        issues={issues}
       />
 
     </div>
