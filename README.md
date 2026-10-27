@@ -2,8 +2,6 @@
 
 > **A modern full-stack web application bridging Citizen Civic Reporting, Relational PostgreSQL Storage (Supabase), and Live Field Operations Spreadsheets (Google Sheets).**
 
-![CivicPulse Banner](https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80)
-
 ---
 
 ## 📋 Assessment Criteria Alignment (8 / 8 Checklist)
