@@ -326,7 +326,7 @@ export default function App() {
       <section className="border-b border-white/[0.06] bg-gradient-to-b from-[#111526]/40 to-[#080A10] pt-10 pb-8 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
           
-          {/* Greeting matching Image 2 ("Hi Aditya, what are we automating?") */}
+          {/* Greeting matching Image 2 ("Hi, what are we automating?") */}
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-300 to-white bg-clip-text text-transparent">
             Hi {citizenName}, what are we resolving today?
           </h1>
