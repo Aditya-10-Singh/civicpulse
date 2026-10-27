@@ -246,24 +246,11 @@ export default function AuthScreen({ onAuthSuccess, onContinueAsGuest }) {
               )}
 
               {successMsg && !error && (
-                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start space-x-2 mb-5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs flex items-start space-x-2.5 mb-5">
+                  <Mail className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold">Email Dispatched!</span> Check your inbox (or spam folder) for the 6-digit code.
+                    <span className="font-bold">Verification code sent!</span> Please check your inbox at <strong>{email}</strong> (including Spam or Promotions tab).
                   </div>
-                </div>
-              )}
-
-              {/* Instant Verification Code Display */}
-              {activeOtpCode && (
-                <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 mb-5 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-purple-800">Your Verification Code:</span>
-                    <span className="font-mono text-base font-extrabold text-purple-700 tracking-widest">{activeOtpCode}</span>
-                  </div>
-                  <p className="text-[11px] text-purple-600">
-                    Check your Gmail Spam/Updates tab, or enter the code above (or <strong>123456</strong>) to continue right now.
-                  </p>
                 </div>
               )}
 

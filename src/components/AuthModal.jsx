@@ -211,13 +211,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               </button>
             </div>
 
-            {activeCode && (
-              <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-300 flex items-center justify-between">
-                <span>Active OTP: <strong className="font-mono text-purple-200">{activeCode}</strong></span>
-                <span className="text-[10px] text-purple-400">(or use 123456)</span>
-              </div>
-            )}
-
             <div className="flex items-center justify-between gap-1.5 py-2">
               {otpDigits.map((d, i) => (
                 <input
