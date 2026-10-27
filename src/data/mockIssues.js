@@ -8,7 +8,7 @@ export const INITIAL_MOCK_ISSUES = [
     priority: "Critical",
     location: "Outer Ring Road, Pillar 142",
     reported_by_name: "Aditya Singh",
-    reported_by_email: "aditya.singh00552@gmail.com",
+    reported_by_email: "adityasinghfeb102005@gmail.com",
     upvotes: 38,
     image_url: "/issues/pothole-road.png",
     created_at: new Date(Date.now() - 3600000 * 20).toISOString(),
@@ -60,6 +60,37 @@ export const INITIAL_MOCK_ISSUES = [
     created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
     synced_to_sheets: true,
     resolution_notes: "Power grid engineers replaced damaged unit and restored supply."
+  },
+  {
+    id: "g-105",
+    title: "Submerged Pedestrian Underpass & Silt Accumulation",
+    description: "Subway drainage pumps failed during overnight storm. Over 18 inches of muddy standing water is blocking pedestrian foot access to Metro Station.",
+    category: "Water Supply & Drainage",
+    status: "Pending Review",
+    priority: "High",
+    location: "Metro Station North Underpass, Gate 2",
+    reported_by_name: "Aditya Singh",
+    reported_by_email: "adityasinghfeb102005@gmail.com",
+    upvotes: 27,
+    image_url: "/issues/drain-clog.png",
+    created_at: new Date(Date.now() - 3600000 * 8).toISOString(),
+    synced_to_sheets: true
+  },
+  {
+    id: "g-106",
+    title: "Structural Asphalt Cratering on Highway Off-Ramp",
+    description: "Continuous heavy truck movement has broken the top bitumen binding, creating 3 severe jagged ruts that pose serious rim damage and rollover risk for two-wheelers.",
+    category: "Roads & Transport",
+    status: "Resolved",
+    priority: "Medium",
+    location: "Eastern Highway Flyover Off-Ramp",
+    reported_by_name: "Vikas Mehra",
+    reported_by_email: "vikas.mehra@example.com",
+    upvotes: 33,
+    image_url: "/issues/pothole-road.png",
+    created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+    synced_to_sheets: true,
+    resolution_notes: "Quick-setting cold mix patch laid by municipal highway maintenance team."
   }
 ];
 

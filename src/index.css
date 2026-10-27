@@ -4,37 +4,44 @@
 
 @layer base {
   body {
-    @apply bg-[#0B0F17] text-slate-200 antialiased selection:bg-sky-500/30 selection:text-sky-200;
+    @apply bg-[#090A10] text-slate-100 antialiased selection:bg-purple-500/30 selection:text-purple-200;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 @layer utilities {
-  /* Crisp, human-crafted card styling */
-  .dashboard-card {
-    background-color: #111724;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  /* Make.com & Mirror style rich color grading */
+  .make-gradient-bg {
+    background: radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.35) 0%, rgba(79, 70, 229, 0.2) 35%, rgba(9, 10, 16, 0.95) 75%);
   }
 
-  .dashboard-card-hover {
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  .make-purple-gradient {
+    background: linear-gradient(135deg, #A855F7 0%, #7C3AED 50%, #4F46E5 100%);
   }
-  .dashboard-card-hover:hover {
-    border-color: rgba(56, 189, 248, 0.35);
+
+  .mirror-card {
+    background: #0E101B;
+    border: 1px solid rgba(168, 85, 247, 0.15);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(168, 85, 247, 0.05);
+  }
+
+  .mirror-card-hover {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mirror-card-hover:hover {
+    border-color: rgba(168, 85, 247, 0.4);
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(56, 189, 248, 0.15);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6), 0 0 25px -4px rgba(168, 85, 247, 0.2);
   }
 
-  /* Crisp table rows */
-  .table-row-hover:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+  .glow-cyan {
+    box-shadow: 0 0 20px -3px rgba(6, 182, 212, 0.3);
   }
 
-  /* Subtle dot grid background for authentic software feel */
-  .bg-grid-pattern {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-    background-size: 24px 24px;
+  /* Spreadsheet grid cell styling */
+  .sheet-cell {
+    border-right: 1px solid #1E2333;
+    border-bottom: 1px solid #1E2333;
   }
 }
 
@@ -44,12 +51,12 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #090A10;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #252A3D;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #3B425C;
 }
