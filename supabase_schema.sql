@@ -101,9 +101,9 @@ INSERT INTO public.grievances (
   'Critical',
   'Outer Ring Road, Near Metro Pillar 142',
   'Aditya Singh',
-  'aditya.singh@civicpulse.org',
-  34,
-  'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80'
+  'adityasingh00552@gmail.com',
+  38,
+  '/issues/pothole-road.png'
 ),
 (
   'Overflowing Community Garbage Bin & Drain Clogging',
@@ -114,30 +114,30 @@ INSERT INTO public.grievances (
   'Sector 14 Market Complex, Lane 3',
   'Pooja Sharma',
   'pooja.s@civicpulse.org',
-  19,
-  'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80'
+  21,
+  '/issues/drain-clog.png'
 ),
 (
-  'Main Water Pipeline Fracture flooding residential boulevard',
-  'Fresh potable drinking water pipeline ruptured at 6 AM. Millions of liters wasting onto the footpath while water pressure dropped to zero.',
+  'Main Water Pipeline Fracture & Road Cave-In',
+  'Fresh potable drinking water pipeline ruptured at 6 AM. Millions of liters wasting onto the footpath while water pressure dropped to zero and road collapsed.',
   'Water Supply & Drainage',
-  'Resolved',
+  'In Progress',
   'Critical',
   'Greenwood Avenue, Block B',
   'Rohit Verma',
   'rohit.v@civicpulse.org',
-  52,
-  'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=800&q=80'
+  64,
+  '/issues/pipeline-cavein.png'
 ),
 (
-  'High-voltage street lamp poles flickering and short-circuiting',
-  'A cluster of 5 LED street lights are completely dark during night hours, creating safety concerns for pedestrians and night shift workers.',
+  'Utility Pole Transformer Catching Fire and Emitting Smoke',
+  'Overhead transformer short-circuited and caught fire with thick smoke near residential apartments. Power supply urgently disconnected.',
   'Electrical & Streetlights',
-  'In Progress',
-  'Medium',
+  'Resolved',
+  'Critical',
   'Parkview Road, Crossway 7',
   'Sneha Patil',
   'sneha.p@civicpulse.org',
-  14,
-  'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=800&q=80'
+  49,
+  '/issues/electric-fire.png'
 );

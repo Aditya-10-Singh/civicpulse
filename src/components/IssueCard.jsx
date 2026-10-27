@@ -35,6 +35,33 @@ const STATUS_CONFIGS = {
   'Resolved': 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
 };
 
+// Intelligent resolver that guarantees the user's authentic photos are always used
+export function resolveIssueImage(issue) {
+  if (!issue) return null;
+  const url = issue.image_url;
+
+  // If already one of our local authentic images, use directly
+  if (url && url.startsWith('/issues/')) return url;
+
+  const title = (issue.title || '').toLowerCase();
+  const cat = (issue.category || '').toLowerCase();
+
+  if (title.includes('pothole') || cat.includes('road')) {
+    return '/issues/pothole-road.png';
+  }
+  if (title.includes('drain') || title.includes('garbage') || title.includes('waste') || cat.includes('sanitation')) {
+    return '/issues/drain-clog.png';
+  }
+  if (title.includes('water') || title.includes('pipe') || title.includes('flood') || title.includes('cave') || cat.includes('water')) {
+    return '/issues/pipeline-cavein.png';
+  }
+  if (title.includes('electric') || title.includes('transformer') || title.includes('light') || title.includes('lamp') || cat.includes('electrical')) {
+    return '/issues/electric-fire.png';
+  }
+
+  return url || '/issues/pothole-road.png';
+}
+
 export default function IssueCard({ 
   issue, 
   onUpvote, 
@@ -64,6 +91,8 @@ export default function IssueCard({
     await onStatusChange(issue.id, newStatus);
     setIsUpdating(false);
   };
+
+  const displayImage = resolveIssueImage(issue);
 
   const formattedDate = issue.created_at 
     ? new Date(issue.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -117,14 +146,13 @@ export default function IssueCard({
         </p>
 
         {/* Attached Photo */}
-        {issue.image_url && (
+        {displayImage && (
           <div className="mb-3.5 rounded-lg overflow-hidden border border-white/[0.08] relative bg-slate-950 aspect-video">
             <img 
-              src={issue.image_url} 
+              src={displayImage} 
               alt={issue.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
-              onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>
         )}

@@ -10,6 +10,7 @@ import {
   Clock, 
   AlertTriangle 
 } from 'lucide-react';
+import { resolveIssueImage } from './IssueCard';
 
 const PRIORITY_BADGES = {
   'Critical': 'text-rose-300 bg-rose-500/10 border-rose-500/30',
@@ -54,6 +55,7 @@ export default function IssueTable({ issues, onUpvote, onStatusChange, onDelete 
 
               const priorityClass = PRIORITY_BADGES[issue.priority] || PRIORITY_BADGES['Medium'];
               const statusClass = STATUS_BADGES[issue.status] || STATUS_BADGES['Pending Review'];
+              const imageThumb = resolveIssueImage(issue);
 
               return (
                 <tr key={issue.id} className="table-row-hover transition-colors">
@@ -65,14 +67,25 @@ export default function IssueTable({ issues, onUpvote, onStatusChange, onDelete 
                     </span>
                   </td>
 
-                  {/* Title & Location */}
-                  <td className="py-3 px-4 min-w-[240px]">
-                    <p className="font-semibold text-slate-100 hover:text-sky-300 transition-colors line-clamp-1">
-                      {issue.title}
-                    </p>
-                    <div className="flex items-center space-x-1 text-[11px] text-slate-400 mt-0.5">
-                      <MapPin className="w-3 h-3 text-sky-400 shrink-0" />
-                      <span className="truncate max-w-[200px]">{issue.location}</span>
+                  {/* Title & Location with Photo Thumbnail */}
+                  <td className="py-3 px-4 min-w-[260px]">
+                    <div className="flex items-center space-x-2.5">
+                      {imageThumb && (
+                        <img 
+                          src={imageThumb} 
+                          alt="" 
+                          className="w-9 h-9 rounded-lg object-cover shrink-0 border border-white/[0.1] bg-slate-950"
+                        />
+                      )}
+                      <div>
+                        <p className="font-semibold text-slate-100 hover:text-sky-300 transition-colors line-clamp-1">
+                          {issue.title}
+                        </p>
+                        <div className="flex items-center space-x-1 text-[11px] text-slate-400 mt-0.5">
+                          <MapPin className="w-3 h-3 text-sky-400 shrink-0" />
+                          <span className="truncate max-w-[200px]">{issue.location}</span>
+                        </div>
+                      </div>
                     </div>
                   </td>
 
