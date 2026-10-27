@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { 
   Building2, 
   FileSpreadsheet, 
-  Database, 
   Settings, 
   Plus, 
   LogIn, 
   LogOut, 
-  GraduationCap,
   ChevronDown,
   User,
-  ShieldCheck
+  ShieldCheck,
+  Search,
+  Sparkles
 } from 'lucide-react';
 
 export default function Navbar({
@@ -21,103 +21,79 @@ export default function Navbar({
   onOpenAuthModal,
   onOpenSheetsDrawer,
   onOpenConfigModal,
-  onOpenVivaModal,
-  onOpenDbModal,
   onLogout
 }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0B0F17]/95 backdrop-blur-md border-b border-white/[0.08]">
+    <header className="sticky top-0 z-40 bg-[#080A10]/95 backdrop-blur-md border-b border-white/[0.08]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
           
-          {/* Left: Brand Identity */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-400">
-              <Building2 className="w-4 h-4" />
+          {/* Left: Brand Identity (Make.com Style) */}
+          <div className="flex items-center space-x-3.5">
+            <div className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-extrabold text-base shadow-sm">
+              🏛️
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-bold text-white tracking-tight">
+              <span className="text-base font-extrabold text-white tracking-tight">
                 CivicPulse
               </span>
-              <span className="text-[10px] text-slate-400 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06] font-medium hidden sm:inline-block">
-                Ward 14
+              <span className="text-[10px] text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20 font-semibold hidden sm:inline-block">
+                Ward 14 Dispatch
               </span>
             </div>
 
-            {/* Subtle Status Dots */}
-            <div className="hidden md:flex items-center space-x-2 pl-3 border-l border-white/[0.08] text-[11px] text-slate-400">
-              <span 
-                className="flex items-center space-x-1.5 cursor-pointer hover:text-white transition-colors"
+            {/* Live Service Dots */}
+            <div className="hidden md:flex items-center space-x-2.5 pl-3.5 border-l border-white/[0.08] text-xs text-slate-400">
+              <button 
                 onClick={onOpenConfigModal}
+                className="flex items-center space-x-1.5 hover:text-white transition-colors cursor-pointer"
                 title="Supabase Database Status"
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${isSupabaseLive ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                <span>{isSupabaseLive ? 'PostgreSQL' : 'Demo DB'}</span>
-              </span>
+                <span className={`w-2 h-2 rounded-full ${isSupabaseLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-[11px] font-medium">{isSupabaseLive ? 'PostgreSQL Live' : 'Demo DB'}</span>
+              </button>
               <span className="text-slate-600">•</span>
-              <span 
-                className="flex items-center space-x-1.5 cursor-pointer hover:text-white transition-colors"
+              <button 
                 onClick={onOpenSheetsDrawer}
-                title="Google Sheets Sync Status"
+                className="flex items-center space-x-1.5 hover:text-white transition-colors cursor-pointer"
+                title="Google Sheets Live Sync Status"
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${isSheetsLive ? 'bg-emerald-400' : 'bg-sky-400'}`} />
-                <span>Google Sheets</span>
-              </span>
+                <span className={`w-2 h-2 rounded-full ${isSheetsLive ? 'bg-emerald-400 animate-pulse' : 'bg-purple-400'}`} />
+                <span className="text-[11px] font-medium">Google Sheets</span>
+              </button>
             </div>
           </div>
 
-          {/* Right: Clean, Uncluttered Action Bar */}
-          <div className="flex items-center space-x-2">
+          {/* Right: Clean, Production Action Bar */}
+          <div className="flex items-center space-x-2.5">
             
-            {/* Database & Users Button */}
-            <button
-              onClick={onOpenDbModal}
-              className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors"
-              title="Inspect Database Users & Grievances"
-            >
-              <Database className="w-3.5 h-3.5 text-sky-400" />
-              <span>DB & Users</span>
-            </button>
-
-            {/* Assessment Guide Button */}
-            <button
-              onClick={onOpenVivaModal}
-              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/25 hover:bg-purple-500/20 transition-colors"
-              title="View 8-Point Assessment Guide"
-            >
-              <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
-              <span className="hidden sm:inline">Rubric Guide</span>
-              <span className="text-[10px] font-mono bg-purple-500/30 text-purple-200 px-1 py-0.2 rounded ml-1">
-                8/8
-              </span>
-            </button>
-
-            {/* Google Sheets Modal Button */}
+            {/* Google Sheets Hub */}
             <button
               onClick={onOpenSheetsDrawer}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] transition-colors"
-              title="Google Sheets Sync Hub"
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.06] border border-white/[0.06] transition-colors cursor-pointer flex items-center space-x-1.5 text-xs font-medium"
+              title="Google Sheets Live Sync Hub"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span className="hidden sm:inline">Sheets Hub</span>
             </button>
 
-            {/* Settings Button */}
+            {/* Settings */}
             <button
               onClick={onOpenConfigModal}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] transition-colors"
-              title="API Keys & Database Config"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.06] transition-colors cursor-pointer"
+              title="Database & API Settings"
             >
               <Settings className="w-4 h-4" />
             </button>
 
-            {/* + New Issue CTA */}
+            {/* Primary Make.com Purple Gradient CTA */}
             <button
               onClick={onOpenReportModal}
-              className="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white shadow-sm shadow-sky-500/20 transition-colors ml-1"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/30 transition-all cursor-pointer transform hover:-translate-y-0.5 ml-1"
             >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Report Issue</span>
             </button>
 
@@ -126,34 +102,42 @@ export default function Navbar({
               <div className="relative pl-2 border-l border-white/[0.08]">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-1.5 p-1 rounded-lg hover:bg-white/[0.05] transition-colors text-left"
+                  className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-white/[0.06] transition-colors text-left cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/30 text-sky-300 flex items-center justify-center text-xs font-bold">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                     {(user.user_metadata?.full_name || user.email || 'A').slice(0, 1).toUpperCase()}
                   </div>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </button>
 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-[#111724] border border-white/[0.1] rounded-xl p-2 shadow-2xl z-50 text-xs">
-                    <div className="px-2.5 py-2 border-b border-white/[0.06]">
-                      <p className="font-semibold text-white truncate">
-                        {user.user_metadata?.full_name || 'Aditya Singh'}
-                      </p>
-                      <p className="text-[11px] text-slate-400 truncate">
+                  <div className="absolute right-0 mt-2 w-64 bg-[#0D1019] border border-white/[0.1] rounded-2xl p-2.5 shadow-2xl z-50 text-xs animate-fade-in">
+                    <div className="px-3 py-2.5 border-b border-white/[0.06]">
+                      <div className="flex items-center space-x-1.5">
+                        <p className="font-bold text-white truncate text-sm">
+                          {user.user_metadata?.full_name || 'Aditya Singh'}
+                        </p>
+                        <ShieldCheck className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate mt-0.5">
                         {user.email}
                       </p>
+                      <span className="inline-block mt-1.5 text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20 px-2 py-0.5 rounded-full">
+                        Verified Citizen
+                      </span>
                     </div>
+
                     <button
-                      onClick={() => { setShowProfileMenu(false); onOpenDbModal(); }}
-                      className="w-full text-left px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.05] flex items-center space-x-2 mt-1"
+                      onClick={() => { setShowProfileMenu(false); onOpenConfigModal(); }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.05] flex items-center space-x-2 mt-1 cursor-pointer"
                     >
-                      <Database className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Database & Users</span>
+                      <Settings className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Connection Settings</span>
                     </button>
+
                     <button
                       onClick={() => { setShowProfileMenu(false); onLogout(); }}
-                      className="w-full text-left px-2.5 py-2 rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2 mt-0.5"
+                      className="w-full text-left px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2 mt-0.5 cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>Sign Out</span>
@@ -164,9 +148,9 @@ export default function Navbar({
             ) : (
               <button
                 onClick={onOpenAuthModal}
-                className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/[0.08] transition-colors ml-1"
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 border border-white/[0.08] transition-colors ml-1 cursor-pointer"
               >
-                <LogIn className="w-3.5 h-3.5 text-sky-400" />
+                <LogIn className="w-3.5 h-3.5 text-purple-400" />
                 <span>Sign In</span>
               </button>
             )}

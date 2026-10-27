@@ -10,14 +10,12 @@
 
 | No. | Assessment Question | Implementation in CivicPulse |
 |:---:|:---|:---|
-| **1** | **Self Introduction** | Dedicated pitch & profile for **Aditya Singh** (Full-Stack Web Developer). |
-| **2** | **Project Introduction** | Real-world problem: Municipal civic hazard reporting & dual-database sync architecture built this week. |
-| **3** | **Frontend Development** | Modern React + Vite + Tailwind CSS UI with glassmorphic dark theme, KPI stat cards, filters, and modals. |
-| **4** | **GitHub** | Full Git version control, structured commits, modular code, and ready to push to GitHub. |
-| **5** | **Google Sheets Integration** | Real-time Webhook integration with Google Apps Script + Bulk Sync + Instant CSV export. |
-| **6** | **Supabase Integration** | PostgreSQL database with complete CRUD (Create, Read, Update, Delete) & Row Level Security policies. |
-| **7** | **Authentication** | Supabase Auth (Email & Password, Session State, JWT, and 1-Click Demo Citizen Login). |
-| **8** | **Deployment** | Production-ready Vite build with `vercel.json` SPA rewrites ready for 1-click Vercel deployment. |
+| **1** | **Frontend Development** | Modern React + Vite + Tailwind CSS UI with glassmorphic dark theme, KPI stat cards, filters, and modals. |
+| **2** | **GitHub** | Full Git version control, structured commits, modular code, and ready to push to GitHub. |
+| **3** | **Google Sheets Integration** | Real-time Webhook integration with Google Apps Script + Bulk Sync + Instant CSV export. |
+| **4** | **Supabase Integration** | PostgreSQL database with complete CRUD (Create, Read, Update, Delete) & Row Level Security policies. |
+| **5** | **Authentication** | Supabase Auth (Email & Password, Session State, JWT, and 1-Click Demo Citizen Login). |
+| **6** | **Deployment** | Production-ready Vite build with `vercel.json` SPA rewrites ready for 1-click Vercel deployment. |
 
 ---
 

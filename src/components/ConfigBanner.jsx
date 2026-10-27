@@ -48,7 +48,7 @@ export default function ConfigBanner({ isOpen, onClose, onConfigUpdated }) {
                 Supabase Configuration
               </h2>
               <p className="text-xs text-slate-400">
-                Connect your live PostgreSQL database (Criterion #6)
+                Connect your live PostgreSQL database & authentication service
               </p>
             </div>
           </div>

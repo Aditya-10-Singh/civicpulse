@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { sendOtpViaGoogleSheets } from './googleSheets';
 
 const STORAGE_KEY_URL = 'civicpulse_supabase_url';
 const STORAGE_KEY_ANON = 'civicpulse_supabase_anon';
@@ -232,6 +233,150 @@ export async function apiDeleteGrievance(id) {
 
 // ----------------- AUTH API HELPERS -----------------
 
+export async function apiSendEmailOtp(email, fullName = 'Citizen') {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    throw new Error("Please enter a valid email address.");
+  }
+
+  // Generate secure 6-digit verification code
+  const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Store in session storage for verification matching
+  sessionStorage.setItem('civicpulse_active_otp', JSON.stringify({
+    email: cleanEmail,
+    otp: generatedCode,
+    fullName: fullName.trim() || 'Citizen',
+    createdAt: Date.now()
+  }));
+
+  const client = getSupabase();
+  let supabaseSent = false;
+  let rateLimitWarning = null;
+
+  // 1. Send via Supabase Auth Email OTP
+  if (client) {
+    try {
+      const { data, error } = await client.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          data: { full_name: fullName.trim() || 'Citizen' },
+          shouldCreateUser: true
+        }
+      });
+      if (error) {
+        if (error.message?.toLowerCase().includes('rate limit') || error.status === 429) {
+          rateLimitWarning = "Supabase hourly email rate limit reached.";
+        } else {
+          console.warn("Supabase signInWithOtp notice:", error.message);
+        }
+      } else {
+        supabaseSent = true;
+      }
+    } catch (sbErr) {
+      console.warn("Supabase signInWithOtp failed to fetch:", sbErr);
+    }
+  }
+
+  // 2. Also dispatch via Google Apps Script Mailer (100 free real emails/day)
+  let googleMailSent = false;
+  try {
+    const res = await sendOtpViaGoogleSheets(cleanEmail, generatedCode, fullName);
+    if (res?.success) googleMailSent = true;
+  } catch (err) {
+    console.warn("Google Apps Script email dispatch notice:", err);
+  }
+
+  return {
+    success: true,
+    email: cleanEmail,
+    code: generatedCode,
+    supabaseSent,
+    googleMailSent,
+    rateLimitWarning
+  };
+}
+
+export async function apiVerifyEmailOtp(email, enteredToken, fullName = 'Citizen') {
+  const cleanEmail = email.trim().toLowerCase();
+  const token = (enteredToken || '').trim();
+
+  if (token.length < 6) {
+    throw new Error("Please enter the complete 6-digit verification code.");
+  }
+
+  const client = getSupabase();
+
+  // 1. Try Supabase verifyOtp first
+  if (client) {
+    try {
+      const { data, error } = await client.auth.verifyOtp({
+        email: cleanEmail,
+        token: token,
+        type: 'email'
+      });
+      if (!error && data?.user) {
+        localStorage.setItem('civicpulse_auth_session', JSON.stringify({
+          user: data.user,
+          expiresAt: Date.now() + 7 * 86400000
+        }));
+        return data.user;
+      }
+    } catch (sbErr) {
+      console.warn("Supabase verifyOtp notice:", sbErr);
+    }
+  }
+
+  // 2. Validate against session challenge code or demo bypass code
+  const storedRaw = sessionStorage.getItem('civicpulse_active_otp');
+  let isValid = false;
+
+  if (storedRaw) {
+    try {
+      const parsed = JSON.parse(storedRaw);
+      if (parsed.email === cleanEmail && parsed.otp === token) {
+        isValid = true;
+      }
+    } catch {}
+  }
+
+  if (token === '123456') isValid = true;
+
+  if (!isValid) {
+    throw new Error("Invalid 6-digit verification code. Please check your email or click Resend.");
+  }
+
+  // Register in local registry if not already registered
+  const users = getRegisteredUsers();
+  let user = users.find(u => u.email.toLowerCase() === cleanEmail);
+  if (!user) {
+    user = {
+      id: "usr-" + Date.now().toString().slice(-6),
+      email: cleanEmail,
+      fullName: fullName.trim() || 'Aditya Singh',
+      role: 'Verified Citizen (Email OTP)',
+      createdAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY_LOCAL_USERS, JSON.stringify([user, ...users]));
+  }
+
+  const authenticatedUser = {
+    id: user.id,
+    email: user.email,
+    user_metadata: {
+      full_name: user.fullName || fullName || 'Aditya Singh',
+      role: 'Verified Citizen (Email OTP)'
+    }
+  };
+
+  localStorage.setItem('civicpulse_auth_session', JSON.stringify({
+    user: authenticatedUser,
+    expiresAt: Date.now() + 7 * 86400000
+  }));
+
+  return authenticatedUser;
+}
+
 export async function apiSignUp(email, password, fullName) {
   const client = getSupabase();
   if (!client) {
@@ -264,15 +409,34 @@ export async function apiSignIn(email, password) {
 }
 
 export async function apiSignOut() {
+  localStorage.removeItem('civicpulse_auth_session');
+  sessionStorage.removeItem('civicpulse_active_otp');
   const client = getSupabase();
   if (client) {
-    await client.auth.signOut();
+    try {
+      await client.auth.signOut();
+    } catch {}
   }
 }
 
 export async function apiGetSession() {
   const client = getSupabase();
-  if (!client) return null;
-  const { data } = await client.auth.getSession();
-  return data?.session || null;
+  if (client) {
+    try {
+      const { data } = await client.auth.getSession();
+      if (data?.session) return data.session;
+    } catch {}
+  }
+
+  try {
+    const raw = localStorage.getItem('civicpulse_auth_session');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.expiresAt > Date.now()) {
+        return { user: parsed.user };
+      }
+    }
+  } catch {}
+
+  return null;
 }

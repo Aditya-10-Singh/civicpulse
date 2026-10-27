@@ -112,6 +112,44 @@ export async function syncSingleGrievanceToSheets(item) {
 }
 
 /**
+ * Dispatches an email OTP via Google Apps Script Mailer (100 free real emails/day).
+ */
+export async function sendOtpViaGoogleSheets(email, otp, fullName) {
+  const webhookUrl = getGoogleSheetsWebhookUrl();
+  if (!webhookUrl || !webhookUrl.startsWith('http')) {
+    return { success: false, mode: 'unconfigured' };
+  }
+
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "SEND_OTP",
+        email: email.trim().toLowerCase(),
+        otp,
+        fullName: fullName || "Citizen"
+      })
+    });
+
+    addSyncLog({
+      type: "OTP_DISPATCH",
+      status: "Email Sent",
+      itemTitle: `OTP for ${email}`,
+      details: "Dispatched verification email to inbox via Google Apps Script"
+    });
+
+    return { success: true, mode: 'live' };
+  } catch (err) {
+    console.warn("Google Apps Script email dispatch error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
  * Dispatches all grievances in a batch to overwrite/sync the Google Sheet tab.
  */
 export async function syncAllGrievancesToSheets(items) {

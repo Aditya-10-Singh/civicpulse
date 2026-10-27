@@ -56,7 +56,48 @@ function doPost(e) {
     }
 
     const data = JSON.parse(e.postData.contents);
-    const action = data.action || "CREATE"; // CREATE or BULK_SYNC
+    const action = data.action || "CREATE"; // CREATE, BULK_SYNC, or SEND_OTP
+
+    // 1. Direct Email OTP Dispatch (Real inbox delivery via Google Apps Script Mailer)
+    if (action === "SEND_OTP") {
+      const recipient = data.email;
+      const otp = data.otp;
+      const name = data.fullName || "Citizen";
+
+      MailApp.sendEmail({
+        to: recipient,
+        subject: "Your CivicPulse Verification Code: " + otp,
+        htmlBody: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;">
+            <div style="margin-bottom: 24px;">
+              <span style="font-size: 24px;">🏛️</span>
+              <span style="font-size: 20px; font-weight: 800; color: #1e1b4b; letter-spacing: -0.5px; margin-left: 8px;">CivicPulse</span>
+            </div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 8px;">Verify Your Email Address</h2>
+            <p style="font-size: 14px; color: #475569; line-height: 1.5; margin-bottom: 24px;">
+              Hello <strong>${name}</strong>,<br>
+              Please use the verification code below to complete your registration or login on CivicPulse.
+            </p>
+            <div style="background: #f5f3ff; border: 1px dashed #c4b5fd; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+              <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #7c3aed; margin-bottom: 6px;">Your 6-Digit OTP Code</div>
+              <div style="font-size: 36px; font-weight: 800; font-family: monospace; letter-spacing: 8px; color: #5b21b6;">${otp}</div>
+            </div>
+            <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 16px;">
+              ⏱️ This code expires in 10 minutes. If you did not request this code, you can safely ignore this email.
+            </p>
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; font-size: 11px; color: #94a3b8;">
+              CivicPulse Municipal Infrastructure Portal • Ward 14 Redressal System
+            </div>
+          </div>
+        `
+      });
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        message: "OTP code dispatched directly to " + recipient,
+        timestamp: new Date().toISOString()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
 
     if (action === "BULK_SYNC" && Array.isArray(data.items)) {
       // Clear old rows except header and rewrite

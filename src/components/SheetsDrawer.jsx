@@ -77,7 +77,7 @@ export default function SheetsDrawer({ isOpen, onClose, issues, onSyncSuccess })
                 <span>Google Sheets Integration Hub</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                Assessment Criterion #5 • Two-Way Municipal Reporting Sync
+                Two-Way Municipal Reporting & Spreadsheet Synchronization
               </p>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function SheetsDrawer({ isOpen, onClose, issues, onSyncSuccess })
               <p className="text-xs text-slate-400">
                 {isConfigured 
                   ? 'All grievance creations automatically append to your active Google Sheet.'
-                  : 'Currently mocking webhook events with full audit logging for viva presentation.'}
+                  : 'Interactive demonstration mode active with audit event logging.'}
               </p>
             </div>
           </div>
@@ -109,14 +109,14 @@ export default function SheetsDrawer({ isOpen, onClose, issues, onSyncSuccess })
             <button
               onClick={handleBulkSync}
               disabled={syncing}
-              className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+              className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
               <span>{syncing ? 'Syncing...' : 'Sync All to Sheets'}</span>
             </button>
             <button
               onClick={handleExportCsv}
-              className="flex items-center space-x-1 px-3 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+              className="flex items-center space-x-1 px-3 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
               title="Download CSV for Excel or Google Sheets"
             >
               <Download className="w-3.5 h-3.5" />
@@ -134,7 +134,7 @@ export default function SheetsDrawer({ isOpen, onClose, issues, onSyncSuccess })
             {savedNotice && (
               <span className="text-xs text-emerald-400 flex items-center space-x-1">
                 <Check className="w-3.5 h-3.5" />
-                <span>Saved to browser memory!</span>
+                <span>Saved!</span>
               </span>
             )}
           </div>
@@ -148,28 +148,12 @@ export default function SheetsDrawer({ isOpen, onClose, issues, onSyncSuccess })
             />
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white shadow transition-colors cursor-pointer"
             >
               Save URL
             </button>
           </div>
         </form>
-
-        {/* Setup Guide for Evaluator / Viva */}
-        <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-1.5">
-              <Code2 className="w-4 h-4" />
-              <span>How Google Sheets Integration Works (Viva Point)</span>
-            </h4>
-          </div>
-          <ol className="text-xs text-slate-300 space-y-1.5 list-decimal list-inside leading-relaxed">
-            <li>Open a new sheet at <span className="text-emerald-300 font-mono">sheets.new</span> and rename tab to <span className="text-emerald-300 font-mono">Grievances</span>.</li>
-            <li>Click <strong>Extensions &gt; Apps Script</strong> and paste the contents of <span className="text-emerald-300 font-mono">google_apps_script.js</span>.</li>
-            <li>Click <strong>Deploy &gt; New Deployment &gt; Web App</strong> (Execute as Me, Access: Anyone).</li>
-            <li>Paste the generated Web App URL into the box above to see real-time updates!</li>
-          </ol>
-        </div>
 
         {/* Sync Audit Logs */}
         <div>

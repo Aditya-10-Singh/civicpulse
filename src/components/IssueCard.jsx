@@ -189,7 +189,7 @@ export default function IssueCard({
         {/* Upvote Pill */}
         <button
           onClick={handleUpvoteClick}
-          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
             hasUpvoted 
               ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' 
               : 'bg-[#141824] text-slate-300 border-white/[0.08] hover:border-purple-500/30 hover:text-white'
@@ -217,7 +217,7 @@ export default function IssueCard({
 
           <button
             onClick={() => onDelete(issue.id)}
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
             title="Withdraw ticket"
           >
             <Trash2 className="w-3.5 h-3.5" />
